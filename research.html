@@ -329,8 +329,8 @@
 <script>
 
 document.addEventListener("DOMContentLoaded", () => {
-  const key      = sessionStorage.getItem("genai_api_key");
-  const provider = sessionStorage.getItem("genai_provider");
+  const key      = localStorage.getItem("genai_api_key");
+  const provider = localStorage.getItem("genai_provider");
   if (!key || !provider) {
     window.location.href = "/";
     return;

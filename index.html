@@ -647,8 +647,8 @@ const LANDING = {
 
     API.setKey(key, LANDING.selectedProvider);
 
-    sessionStorage.setItem("genai_api_key",  key);
-    sessionStorage.setItem("genai_provider", LANDING.selectedProvider);
+    localStorage.setItem("genai_api_key",  key);
+    localStorage.setItem("genai_provider", LANDING.selectedProvider);
 
     document.getElementById("keyInputSection").style.display    = "none";
     document.getElementById("providerGrid").style.opacity       = "0.5";
@@ -669,8 +669,8 @@ const LANDING = {
 
   // ── Change key ──────────────────────────────────────────
   changeKey() {
-    sessionStorage.removeItem("genai_api_key");
-    sessionStorage.removeItem("genai_provider");
+    localStorage.removeItem("genai_api_key");
+    localStorage.removeItem("genai_provider");
 
     document.getElementById("keyInputSection").style.display = "block";
     document.getElementById("providerGrid").style.opacity    = "1";
@@ -694,8 +694,8 @@ const LANDING = {
 
   // ── Restore session if key already saved ─────────────────
   restoreSession() {
-    const key      = sessionStorage.getItem("genai_api_key");
-    const provider = sessionStorage.getItem("genai_provider");
+    const key      = localStorage.getItem("genai_api_key");
+    const provider = localStorage.getItem("genai_provider");
     if (!key || !provider) return;
 
     API.setKey(key, provider);
