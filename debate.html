@@ -13,7 +13,7 @@
 
   <!-- ── Top nav ───────────────────────────────────────────── -->
   <nav class="top-nav">
-    <a href="index.html" class="nav-back">← Back</a>
+    <a href="/" class="nav-back">← Home</a>
     <div class="nav-center">
       <span class="nav-logo">GenAI Classroom</span>
       <span class="nav-mode debate-mode">🎭 Debate Arena</span>
@@ -111,7 +111,7 @@ const DEBATE_APP = {
     const provider = sessionStorage.getItem("genai_provider");
 
     if (!key || !provider) {
-      window.location.href = "index.html";
+      window.location.href = "/";
       return;
     }
 

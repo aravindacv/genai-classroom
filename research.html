@@ -13,7 +13,7 @@
 
   <!-- ── Top nav ───────────────────────────────────────────── -->
   <nav class="top-nav">
-    <a href="index.html" class="nav-back">← Back</a>
+    <a href="/" class="nav-back">← Home</a>
     <div class="nav-center">
       <span class="nav-logo">GenAI Classroom</span>
       <span class="nav-mode research-mode">🔬 Research Supervisor</span>
@@ -332,7 +332,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const key      = sessionStorage.getItem("genai_api_key");
   const provider = sessionStorage.getItem("genai_provider");
   if (!key || !provider) {
-    window.location.href = "index.html";
+    window.location.href = "/";
     return;
   }
   API.setKey(key, provider);
