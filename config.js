@@ -7,8 +7,8 @@ const CONFIG = {
 
   // ── App identity ──────────────────────────────────────────
   appName:    "GenAI Classroom",
-  appTagline: "Multi-Agent Interactive Learning · Cybersecurity & AI",
-  version:    "2.0.0",
+  appTagline: "Multi-Agent Interactive Learning",
+  // version:    "2.0.0",
 
   // ── Available providers ───────────────────────────────────
   // Students pick one — recommended shown in UI
