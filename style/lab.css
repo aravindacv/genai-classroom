@@ -1,0 +1,433 @@
+/* ============================================================
+   lab.css — Student Code Lab styles
+   ============================================================ */
+
+/* ── Top nav ──────────────────────────────────────────────── */
+.top-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 0 0;
+  margin-bottom: 2rem;
+}
+
+.nav-back {
+  font-size: 13px;
+  color: rgba(255,255,255,0.40);
+  text-decoration: none;
+  transition: color 0.18s ease;
+}
+
+.nav-back:hover { color: #ffffff; }
+
+.nav-center {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nav-logo {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.50);
+}
+
+.nav-mode {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 12px;
+  border-radius: 999px;
+}
+
+.lab-mode {
+  background: rgba(110,207,173,0.15);
+  color: #6ecfad;
+  border: 0.5px solid rgba(110,207,173,0.35);
+}
+
+.nav-provider {
+  font-size: 11px;
+  color: rgba(255,255,255,0.30);
+  background: rgba(255,255,255,0.06);
+  border: 0.5px solid rgba(255,255,255,0.10);
+  border-radius: 999px;
+  padding: 3px 10px;
+}
+
+
+/* ── Page header ──────────────────────────────────────────── */
+.page-header {
+  text-align: center;
+  padding: 0 1rem 2rem;
+}
+
+.page-header h1 {
+  font-size: 36px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.03em;
+  margin-bottom: 0.5rem;
+}
+
+.page-header h1 span { color: #6ecfad; }
+
+.page-tagline {
+  font-size: 14px;
+  color: rgba(255,255,255,0.50);
+  max-width: 500px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+.header-divider {
+  height: 1px;
+  background: linear-gradient(to right,
+    transparent, rgba(255,255,255,0.08), transparent);
+  margin: 0 0 2rem;
+}
+
+
+/* ── Lab layout ───────────────────────────────────────────── */
+.lab-layout {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+
+/* ── Lab cards (left panel) ───────────────────────────────── */
+.lab-left { display: flex; flex-direction: column; gap: 12px; }
+
+.lab-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 1.1rem 1.25rem;
+  backdrop-filter: blur(12px);
+}
+
+.lab-card-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.50);
+  margin-bottom: 0.85rem;
+  letter-spacing: 0.04em;
+}
+
+
+/* ── Project grid ─────────────────────────────────────────── */
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.project-item {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  padding: 0.65rem 0.75rem;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.project-item:hover {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(110,207,173,0.25);
+}
+
+.project-item.selected {
+  background: rgba(110,207,173,0.12);
+  border-color: rgba(110,207,173,0.40);
+}
+
+.project-icon { font-size: 15px; }
+
+.project-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.80);
+}
+
+.custom-input { margin-top: 10px; }
+
+.custom-input input {
+  width: 100%;
+  font-size: 13px;
+  padding: 0.6rem 0.9rem;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.07);
+  color: #ffffff;
+  outline: none;
+  transition: border-color 0.18s ease;
+}
+
+.custom-input input:focus  { border-color: #6ecfad; }
+.custom-input input::placeholder { color: rgba(255,255,255,0.25); }
+.hidden { display: none; }
+
+
+/* ── Mode list ────────────────────────────────────────────── */
+.mode-list { display: flex; flex-direction: column; gap: 8px; }
+
+.mode-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 10px;
+  padding: 0.7rem 0.9rem;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.mode-item:hover {
+  background: rgba(255,255,255,0.07);
+  border-color: rgba(110,207,173,0.25);
+}
+
+.mode-item.selected {
+  background: rgba(110,207,173,0.10);
+  border-color: rgba(110,207,173,0.38);
+}
+
+.mode-item-icon  { font-size: 18px; flex-shrink: 0; }
+.mode-item-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 2px;
+}
+.mode-item-desc  { font-size: 11px; color: rgba(255,255,255,0.40); }
+
+
+/* ── Code / error textarea ────────────────────────────────── */
+#codeInput {
+  width: 100%;
+  font-size: 12px;
+  font-family: "Fira Code", "Consolas", monospace;
+  padding: 0.75rem 1rem;
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 10px;
+  background: rgba(0,0,0,0.25);
+  color: #e2e8f0;
+  outline: none;
+  resize: vertical;
+  line-height: 1.65;
+  transition: border-color 0.18s ease;
+}
+
+#codeInput:focus       { border-color: #6ecfad; }
+#codeInput::placeholder { color: rgba(255,255,255,0.20); }
+
+
+/* ── Generate button ──────────────────────────────────────── */
+.lab-btn {
+  width: 100%;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 0.85rem;
+  border-radius: 12px;
+  border: none;
+  background: #0F6E56;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.18s ease, transform 0.18s ease, opacity 0.18s ease;
+}
+
+.lab-btn:hover:not(:disabled) {
+  background: #085041;
+  transform: translateY(-1px);
+}
+
+.lab-btn:disabled {
+  opacity: 0.40;
+  cursor: not-allowed;
+}
+
+
+/* ── Right panel: output ──────────────────────────────────── */
+.lab-right {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.output-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.output-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.30);
+}
+
+.copy-btn {
+  font-size: 12px;
+  font-weight: 500;
+  color: #6ecfad;
+  background: rgba(110,207,173,0.10);
+  border: 0.5px solid rgba(110,207,173,0.30);
+  border-radius: 999px;
+  padding: 3px 12px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.copy-btn:hover { background: rgba(110,207,173,0.18); }
+.copy-btn.hidden { display: none; }
+
+
+/* ── Output feed ──────────────────────────────────────────── */
+.output-feed {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 18px;
+  min-height: 560px;
+  max-height: 740px;
+  overflow-y: auto;
+  padding: 1.5rem;
+  scroll-behavior: smooth;
+  backdrop-filter: blur(12px);
+}
+
+.output-feed::-webkit-scrollbar       { width: 4px; }
+.output-feed::-webkit-scrollbar-track { background: transparent; }
+.output-feed::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.10);
+  border-radius: 99px;
+}
+
+.output-empty {
+  text-align: center;
+  color: rgba(255,255,255,0.18);
+  font-size: 14px;
+  padding: 5rem 2rem;
+  line-height: 2;
+}
+
+
+/* ── Output blocks ────────────────────────────────────────── */
+.output-block {
+  margin-bottom: 1.5rem;
+  animation: fadeSlideIn 0.22s ease both;
+}
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.output-block-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+  padding: 0 2px;
+}
+
+.label-structure { color: #a89ef5; }
+.label-code      { color: #6ecfad; }
+.label-explain   { color: #f5a07a; }
+.label-error     { color: #f5a0a0; }
+.label-fix       { color: #6ecfad; }
+.label-review    { color: #7ab8f5; }
+.label-step      { color: #fad07a; }
+
+.output-text {
+  font-size: 14px;
+  color: rgba(255,255,255,0.85);
+  line-height: 1.75;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 12px;
+  padding: 1rem 1.1rem;
+}
+
+.output-text p            { margin-bottom: 0.5rem; }
+.output-text p:last-child { margin-bottom: 0; }
+
+.output-code {
+  font-size: 12.5px;
+  font-family: "Fira Code", "Consolas", monospace;
+  color: #e2e8f0;
+  background: rgba(0,0,0,0.35);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 1.1rem 1.25rem;
+  overflow-x: auto;
+  line-height: 1.7;
+  white-space: pre;
+}
+
+.output-typing {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255,255,255,0.30);
+  font-size: 13px;
+  padding: 1rem 0;
+}
+
+.output-typing-dots {
+  display: flex;
+  gap: 4px;
+}
+
+.output-typing-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #6ecfad;
+  animation: typingBounce 1.3s infinite ease-in-out;
+}
+
+.output-typing-dots span:nth-child(2) { animation-delay: 0.18s; }
+.output-typing-dots span:nth-child(3) { animation-delay: 0.36s; }
+
+@keyframes typingBounce {
+  0%, 80%, 100% { transform: translateY(0);    opacity: 0.35; }
+  40%           { transform: translateY(-4px); opacity: 1;    }
+}
+
+.step-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(250,208,122,0.18);
+  color: #fad07a;
+  font-size: 11px;
+  font-weight: 700;
+  margin-right: 6px;
+  flex-shrink: 0;
+}
+
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media (max-width: 800px) {
+  .lab-layout {
+    grid-template-columns: 1fr;
+  }
+  .output-feed { min-height: 400px; }
+}
+
+@media (max-width: 500px) {
+  .project-grid { grid-template-columns: 1fr 1fr; }
+  .page-header h1 { font-size: 26px; }
+}

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Code Lab — GenAI Classroom</title>
+  <link rel="stylesheet" href="style/main.css" />
+  <link rel="stylesheet" href="style/lab.css" />
+</head>
+<body>
+
+<div class="app-wrapper">
+
+  <!-- ── Top nav ───────────────────────────────────────────── -->
+  <nav class="top-nav">
+    <a href="index.html" class="nav-back">← Back</a>
+    <div class="nav-center">
+      <span class="nav-logo">GenAI Classroom</span>
+      <span class="nav-mode lab-mode">💻 Code Lab</span>
+    </div>
+    <div class="nav-right">
+      <span class="nav-provider" id="navProvider">—</span>
+    </div>
+  </nav>
+
+
+  <!-- ── Page header ───────────────────────────────────────── -->
+  <div class="page-header">
+    <h1>Code <span>Lab</span></h1>
+    <p class="page-tagline">
+      Build real cybersecurity tools in Python with industry-standard
+      structure, step-by-step guidance, and AI-powered error correction.
+    </p>
+  </div>
+
+  <div class="header-divider"></div>
+
+
+  <!-- ── Two column layout ─────────────────────────────────── -->
+  <div class="lab-layout">
+
+    <!-- ── Left panel: controls ──────────────────────────── -->
+    <div class="lab-left">
+
+      <!-- Project picker -->
+      <div class="lab-card">
+        <div class="lab-card-title">🎯 Choose a project</div>
+        <div class="project-grid" id="projectGrid">
+
+          <div class="project-item selected" data-project="fraud"
+               onclick="LAB.selectProject('fraud', this)">
+            <span class="project-icon">🔍</span>
+            <span class="project-name">Fraud Detection</span>
+          </div>
+
+          <div class="project-item" data-project="ids"
+               onclick="LAB.selectProject('ids', this)">
+            <span class="project-icon">🛡️</span>
+            <span class="project-name">Intrusion Detection</span>
+          </div>
+
+          <div class="project-item" data-project="malware"
+               onclick="LAB.selectProject('malware', this)">
+            <span class="project-icon">🦠</span>
+            <span class="project-name">Malware Classifier</span>
+          </div>
+
+          <div class="project-item" data-project="anomaly"
+               onclick="LAB.selectProject('anomaly', this)">
+            <span class="project-icon">📡</span>
+            <span class="project-name">Network Anomaly</span>
+          </div>
+
+          <div class="project-item" data-project="phishing"
+               onclick="LAB.selectProject('phishing', this)">
+            <span class="project-icon">🎣</span>
+            <span class="project-name">Phishing Detector</span>
+          </div>
+
+          <div class="project-item" data-project="custom"
+               onclick="LAB.selectProject('custom', this)">
+            <span class="project-icon">✏️</span>
+            <span class="project-name">Custom Project</span>
+          </div>
+
+        </div>
+
+        <!-- Custom project input -->
+        <div id="customInput" class="custom-input hidden">
+          <input
+            type="text"
+            id="customProjectName"
+            placeholder="Describe your project e.g. Password strength checker..."
+          />
+        </div>
+      </div>
+
+
+      <!-- Mode selector -->
+      <div class="lab-card">
+        <div class="lab-card-title">⚙️ What do you need?</div>
+        <div class="mode-list">
+
+          <div class="mode-item selected" data-mode="generate"
+               onclick="LAB.selectMode('generate', this)">
+            <span class="mode-item-icon">🏗️</span>
+            <div class="mode-item-text">
+              <div class="mode-item-title">Generate full project</div>
+              <div class="mode-item-desc">
+                Complete Python code with industry structure
+              </div>
+            </div>
+          </div>
+
+          <div class="mode-item" data-mode="stepbystep"
+               onclick="LAB.selectMode('stepbystep', this)">
+            <span class="mode-item-icon">👣</span>
+            <div class="mode-item-text">
+              <div class="mode-item-title">Step by step</div>
+              <div class="mode-item-desc">
+                Build it one step at a time with explanations
+              </div>
+            </div>
+          </div>
+
+          <div class="mode-item" data-mode="fixerror"
+               onclick="LAB.selectMode('fixerror', this)">
+            <span class="mode-item-icon">🔧</span>
+            <div class="mode-item-text">
+              <div class="mode-item-title">Fix my error</div>
+              <div class="mode-item-desc">
+                Paste your error and get it corrected
+              </div>
+            </div>
+          </div>
+
+          <div class="mode-item" data-mode="review"
+               onclick="LAB.selectMode('review', this)">
+            <span class="mode-item-icon">🔎</span>
+            <div class="mode-item-text">
+              <div class="mode-item-title">Review my code</div>
+              <div class="mode-item-desc">
+                Security audit and best practice feedback
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+
+      <!-- Error / code input -->
+      <div class="lab-card" id="inputCard">
+        <div class="lab-card-title" id="inputCardTitle">
+          📋 Paste your code or error
+        </div>
+        <textarea
+          id="codeInput"
+          placeholder="Paste your Python code or error message here..."
+          rows="8"
+          spellcheck="false"
+        ></textarea>
+      </div>
+
+
+      <!-- Generate button -->
+      <button class="lab-btn" id="labBtn" onclick="LAB.run()">
+        Generate Code ↗
+      </button>
+
+    </div>
+
+
+    <!-- ── Right panel: output ────────────────────────────── -->
+    <div class="lab-right">
+
+      <!-- Output header -->
+      <div class="output-header">
+        <div class="output-title" id="outputTitle">Output</div>
+        <button class="copy-btn hidden" id="copyBtn"
+                onclick="LAB.copyOutput()">
+          Copy all
+        </button>
+      </div>
+
+      <!-- Output feed -->
+      <div class="output-feed" id="outputFeed">
+        <div class="output-empty">
+          Choose a project and mode on the left,
+          then press <strong>Generate</strong>.
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- ── Scripts ───────────────────────────────────────────── -->
+<script src="config.js"></script>
+<script src="api.js"></script>
+<script src="modules/lab.js"></script>
+<script>
+
+document.addEventListener("DOMContentLoaded", () => {
+  const key      = sessionStorage.getItem("genai_api_key");
+  const provider = sessionStorage.getItem("genai_provider");
+  if (!key || !provider) {
+    window.location.href = "index.html";
+    return;
+  }
+  API.setKey(key, provider);
+  document.getElementById("navProvider").textContent =
+    CONFIG.providers[provider]?.label || provider;
+  LAB.init();
+});
+
+</script>
+
+</body>
+</html>

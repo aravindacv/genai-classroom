@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Debate Arena — GenAI Classroom</title>
+  <link rel="stylesheet" href="style/main.css" />
+  <link rel="stylesheet" href="style/debate.css" />
+</head>
+<body>
+
+<div class="app-wrapper">
+
+  <!-- ── Top nav ───────────────────────────────────────────── -->
+  <nav class="top-nav">
+    <a href="index.html" class="nav-back">← Back</a>
+    <div class="nav-center">
+      <span class="nav-logo">GenAI Classroom</span>
+      <span class="nav-mode debate-mode">🎭 Debate Arena</span>
+    </div>
+    <div class="nav-right">
+      <span class="nav-provider" id="navProvider">—</span>
+    </div>
+  </nav>
+
+
+  <!-- ── Page header ───────────────────────────────────────── -->
+  <div class="page-header">
+    <h1>Debate <span>Arena</span></h1>
+    <p class="page-tagline">
+      Watch four AI experts debate real cybersecurity topics,
+      then challenge the panel with your own questions.
+    </p>
+  </div>
+
+  <div class="header-divider"></div>
+
+
+  <!-- ── Agent cards ───────────────────────────────────────── -->
+  <section class="agents-section">
+    <div class="section-label">The Panel</div>
+    <div id="agentCards"></div>
+  </section>
+
+
+  <!-- ── Topic selector ────────────────────────────────────── -->
+  <section class="topic-section">
+    <div class="topic-controls">
+      <select id="topicSelect">
+        <option value="">— Choose a debate topic —</option>
+      </select>
+      <button id="startBtn">Start Debate ↗</button>
+    </div>
+    <div id="topicBanner" class="hidden"></div>
+  </section>
+
+
+  <!-- ── Debate feed ────────────────────────────────────────── -->
+  <section class="feed-section">
+    <div id="debateFeed">
+      <div class="feed-empty" id="feedEmpty">
+        Select a topic above and press
+        <strong>Start Debate</strong> to begin.
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ── Student Q&A ───────────────────────────────────────── -->
+  <section id="qaSection" class="hidden">
+    <div class="qa-label">Ask the Panel</div>
+    <div class="qa-controls">
+      <input
+        type="text"
+        id="studentQ"
+        placeholder="Type your question and press Enter or Ask..."
+        autocomplete="off"
+      />
+      <button id="askBtn">Ask ↗</button>
+    </div>
+  </section>
+
+
+  <!-- ── Status bar ────────────────────────────────────────── -->
+  <div id="statusBar">Loading...</div>
+
+</div>
+
+
+<!-- ── Scripts ───────────────────────────────────────────── -->
+<script src="config.js"></script>
+<script src="api.js"></script>
+<script src="modules/agents.js"></script>
+<script src="modules/debate.js"></script>
+<script>
+
+// ============================================================
+//  debate page controller
+// ============================================================
+
+const DEBATE_APP = {
+
+  debateActive: false,
+  qaActive:     false,
+
+
+  // ── Boot ──────────────────────────────────────────────────
+  init() {
+    // restore session key from landing page
+    const key      = sessionStorage.getItem("genai_api_key");
+    const provider = sessionStorage.getItem("genai_provider");
+
+    if (!key || !provider) {
+      window.location.href = "index.html";
+      return;
+    }
+
+    API.setKey(key, provider);
+
+    // show provider in nav
+    document.getElementById("navProvider").textContent =
+      `${CONFIG.providers[provider]?.label || provider}`;
+
+    this._renderAgentCards();
+    this._renderTopics();
+    this._bindEvents();
+    this._setStatus("Select a topic and press Start Debate.");
+  },
+
+
+  // ── Render agent cards ────────────────────────────────────
+  _renderAgentCards() {
+    const container = document.getElementById("agentCards");
+    container.innerHTML = "";
+    CONFIG.agents.forEach(agent => {
+      const card             = document.createElement("div");
+      card.className         = "agent-card";
+      card.id                = `card-${agent.id}`;
+      card.style.borderColor = agent.color;
+      card.innerHTML = `
+        <div class="agent-avatar"
+             style="background:${agent.bgColor};color:${agent.color};">
+          ${agent.avatar}
+        </div>
+        <div class="agent-name">${agent.name}</div>
+        <div class="agent-role">${agent.role}</div>
+        <div class="agent-institution">${agent.institution}</div>
+      `;
+      container.appendChild(card);
+    });
+  },
+
+
+  // ── Render topics ─────────────────────────────────────────
+  _renderTopics() {
+    const select = document.getElementById("topicSelect");
+    CONFIG.topics.forEach(topic => {
+      const opt       = document.createElement("option");
+      opt.value       = topic.id;
+      opt.textContent = topic.label;
+      select.appendChild(opt);
+    });
+  },
+
+
+  // ── Bind events ───────────────────────────────────────────
+  _bindEvents() {
+    document.getElementById("startBtn")
+      .addEventListener("click", () => this.startDebate());
+    document.getElementById("askBtn")
+      .addEventListener("click", () => this.askQuestion());
+    document.getElementById("studentQ")
+      .addEventListener("keydown", e => {
+        if (e.key === "Enter") this.askQuestion();
+      });
+  },
+
+
+  // ── Start debate ──────────────────────────────────────────
+  async startDebate() {
+    const topicId = document.getElementById("topicSelect").value;
+    if (!topicId) {
+      this._setStatus("Please select a topic first.");
+      return;
+    }
+
+    this._clearFeed();
+    this._setDebateActive(true);
+    this._highlightTopic(topicId);
+
+    await DEBATE.start(
+      topicId,
+      (agent, text, msgId, isTyping) =>
+        this._onMessage(agent, text, msgId, isTyping),
+      (status) => this._setStatus(status),
+      ()       => this._onDebateComplete()
+    );
+  },
+
+
+  // ── Handle message ────────────────────────────────────────
+  _onMessage(agent, text, msgId, isTyping) {
+    if (isTyping) { this._showTyping(agent); return; }
+    this._removeTyping(agent.id);
+    this._appendMessage(agent, text, msgId);
+  },
+
+
+  // ── Debate complete ───────────────────────────────────────
+  _onDebateComplete() {
+    this._setDebateActive(false);
+    document.getElementById("qaSection").classList.remove("hidden");
+  },
+
+
+  // ── Ask question ──────────────────────────────────────────
+  async askQuestion() {
+    const input    = document.getElementById("studentQ");
+    const question = input.value.trim();
+    if (!question) return;
+
+    this._appendStudentMessage(question);
+    input.value = "";
+
+    document.getElementById("askBtn").disabled = true;
+
+    await DEBATE.ask(
+      question,
+      (agent, text, msgId, isTyping) =>
+        this._onMessage(agent, text, msgId, isTyping),
+      (status) => this._setStatus(status)
+    );
+
+    document.getElementById("askBtn").disabled = false;
+  },
+
+
+  // ── Append agent message ──────────────────────────────────
+  _appendMessage(agent, text, msgId) {
+    const feed        = document.getElementById("debateFeed");
+    const isModerator = agent.id === "moderator";
+    const div         = document.createElement("div");
+    div.className     = "message-wrap";
+    div.id            = `wrap-${msgId}`;
+
+    div.innerHTML = `
+      <div class="message ${isModerator ? "message--moderator" : ""}">
+        <div class="message-header">
+          <div class="message-avatar"
+               style="background:${agent.bgColor};color:${agent.color};">
+            ${agent.avatar}
+          </div>
+          <div class="message-meta">
+            <span class="message-name"
+                  style="color:${agent.color};">${agent.name}</span>
+            <span class="message-role">${agent.role}</span>
+            <span class="message-institution">${agent.institution || ""}</span>
+          </div>
+          ${isModerator
+            ? `<span class="summary-badge">Summary</span>` : ""}
+        </div>
+        <div class="message-text">${this._formatText(text)}</div>
+        ${CONFIG.ui.enableStudentVoting && !isModerator
+          ? `<div class="message-actions">
+               <button class="vote-btn"
+                 onclick="DEBATE_APP.handleVote('${msgId}', this)">
+                 ▲ Insightful <span class="vote-count">0</span>
+               </button>
+             </div>` : ""}
+      </div>`;
+
+    feed.appendChild(div);
+    feed.scrollTop = feed.scrollHeight;
+  },
+
+
+  // ── Append student message ────────────────────────────────
+  _appendStudentMessage(question) {
+    const feed = document.getElementById("debateFeed");
+    const div  = document.createElement("div");
+    div.className = "message-wrap message-wrap--student";
+    div.innerHTML = `
+      <div class="message message--student">
+        <div class="message-header">
+          <div class="message-avatar"
+               style="background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.6);">
+            🎓
+          </div>
+          <div class="message-meta">
+            <span class="message-name"
+                  style="color:rgba(255,255,255,0.7);">
+              Student Question
+            </span>
+          </div>
+        </div>
+        <div class="message-text">${this._formatText(question)}</div>
+      </div>`;
+    feed.appendChild(div);
+    feed.scrollTop = feed.scrollHeight;
+  },
+
+
+  // ── Typing indicator ──────────────────────────────────────
+  _showTyping(agent) {
+    const feed = document.getElementById("debateFeed");
+    if (document.getElementById(`typing-${agent.id}`)) return;
+    const div     = document.createElement("div");
+    div.className = "message-wrap";
+    div.id        = `typing-${agent.id}`;
+    div.innerHTML = `
+      <div class="message message--typing">
+        <div class="message-header">
+          <div class="message-avatar"
+               style="background:${agent.bgColor};color:${agent.color};">
+            ${agent.avatar}
+          </div>
+          <div class="message-meta">
+            <span class="message-name"
+                  style="color:${agent.color};">${agent.name}</span>
+            <span class="message-role">${agent.role}</span>
+          </div>
+        </div>
+        <div class="typing-dots">
+          <span></span><span></span><span></span>
+        </div>
+      </div>`;
+    feed.appendChild(div);
+    feed.scrollTop = feed.scrollHeight;
+  },
+
+
+  // ── Remove typing ─────────────────────────────────────────
+  _removeTyping(agentId) {
+    const el = document.getElementById(`typing-${agentId}`);
+    if (el) el.remove();
+  },
+
+
+  // ── Vote handler ──────────────────────────────────────────
+  handleVote(msgId, btn) {
+    const count = DEBATE.vote(msgId);
+    btn.querySelector(".vote-count").textContent = count;
+    btn.classList.add("voted");
+    btn.disabled = true;
+  },
+
+
+  // ── Highlight topic ───────────────────────────────────────
+  _highlightTopic(topicId) {
+    const topic = CONFIG.topics.find(t => t.id === topicId);
+    if (!topic) return;
+    const bar       = document.getElementById("topicBanner");
+    bar.textContent = `Debating: ${topic.question}`;
+    bar.classList.remove("hidden");
+  },
+
+
+  // ── Set status ────────────────────────────────────────────
+  _setStatus(text) {
+    document.getElementById("statusBar").textContent = text;
+  },
+
+
+  // ── Toggle debate active state ────────────────────────────
+  _setDebateActive(active) {
+    this.debateActive = active;
+    document.getElementById("startBtn").disabled    = active;
+    document.getElementById("topicSelect").disabled = active;
+    document.getElementById("startBtn").textContent = active
+      ? "Debate in progress..."
+      : "Start Debate ↗";
+  },
+
+
+  // ── Clear feed ────────────────────────────────────────────
+  _clearFeed() {
+    document.getElementById("debateFeed").innerHTML = `
+      <div class="feed-empty">
+        Select a topic and press <strong>Start Debate</strong>.
+      </div>`;
+    document.getElementById("qaSection").classList.add("hidden");
+    document.getElementById("topicBanner").classList.add("hidden");
+  },
+
+
+  // ── Format text ───────────────────────────────────────────
+  _formatText(text) {
+    return text.split("\n\n")
+      .map(p => `<p>${p.trim()}</p>`)
+      .join("");
+  }
+
+};
+
+
+document.addEventListener("DOMContentLoaded", () => DEBATE_APP.init());
+
+</script>
+
+</body>
+</html>

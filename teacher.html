@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Teacher Studio — GenAI Classroom</title>
+  <link rel="stylesheet" href="style/main.css" />
+  <link rel="stylesheet" href="style/teacher.css" />
+</head>
+<body>
+
+<div class="app-wrapper">
+
+  <!-- ── Top nav ───────────────────────────────────────────── -->
+  <nav class="top-nav">
+    <a href="index.html" class="nav-back">← Back</a>
+    <div class="nav-center">
+      <span class="nav-logo">GenAI Classroom</span>
+      <span class="nav-mode teacher-mode">📚 Teacher Studio</span>
+    </div>
+    <div class="nav-right">
+      <span class="nav-provider" id="navProvider">—</span>
+    </div>
+  </nav>
+
+
+  <!-- ── Page header ───────────────────────────────────────── -->
+  <div class="page-header">
+    <h1>Teacher <span>Studio</span></h1>
+    <p class="page-tagline">
+      Plan lecture series, build assessments, generate slide outlines,
+      and map learning outcomes — all powered by AI.
+    </p>
+  </div>
+
+  <div class="header-divider"></div>
+
+
+  <!-- ── Two column layout ─────────────────────────────────── -->
+  <div class="studio-layout">
+
+    <!-- ── Left panel ────────────────────────────────────────── -->
+    <div class="studio-left">
+
+      <!-- Tool selector -->
+      <div class="studio-card">
+        <div class="studio-card-title">🛠️ Choose a tool</div>
+        <div class="tool-list">
+
+          <div class="tool-item selected" data-tool="lecture"
+               onclick="TEACHER.selectTool('lecture', this)">
+            <span class="tool-icon">📅</span>
+            <div class="tool-text">
+              <div class="tool-title">Lecture Series Planner</div>
+              <div class="tool-desc">
+                Full weekly plan with objectives and topics
+              </div>
+            </div>
+          </div>
+
+          <div class="tool-item" data-tool="slides"
+               onclick="TEACHER.selectTool('slides', this)">
+            <span class="tool-icon">🖼️</span>
+            <div class="tool-text">
+              <div class="tool-title">Slide Outline Generator</div>
+              <div class="tool-desc">
+                Structured slide deck outline for any topic
+              </div>
+            </div>
+          </div>
+
+          <div class="tool-item" data-tool="assessment"
+               onclick="TEACHER.selectTool('assessment', this)">
+            <span class="tool-icon">📝</span>
+            <div class="tool-text">
+              <div class="tool-title">Assessment Builder</div>
+              <div class="tool-desc">
+                MCQs, case studies, and rubrics
+              </div>
+            </div>
+          </div>
+
+          <div class="tool-item" data-tool="blooms"
+               onclick="TEACHER.selectTool('blooms', this)">
+            <span class="tool-icon">🌸</span>
+            <div class="tool-text">
+              <div class="tool-title">Bloom's Taxonomy Mapper</div>
+              <div class="tool-desc">
+                Map content to learning outcome levels
+              </div>
+            </div>
+          </div>
+
+          <div class="tool-item" data-tool="discussion"
+               onclick="TEACHER.selectTool('discussion', this)">
+            <span class="tool-icon">💬</span>
+            <div class="tool-text">
+              <div class="tool-title">Discussion Questions</div>
+              <div class="tool-desc">
+                Socratic questions to drive classroom debate
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+
+      <!-- Dynamic input form -->
+      <div class="studio-card" id="inputForm">
+
+        <!-- Lecture series inputs -->
+        <div id="form-lecture">
+          <div class="studio-card-title">📅 Lecture Series Details</div>
+          <div class="form-group">
+            <label>Course / Subject</label>
+            <input type="text" id="lec-subject"
+              placeholder="e.g. Introduction to Cybersecurity" />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Number of weeks</label>
+              <select id="lec-weeks">
+                <option value="4">4 weeks</option>
+                <option value="6">6 weeks</option>
+                <option value="8" selected>8 weeks</option>
+                <option value="12">12 weeks</option>
+                <option value="16">16 weeks</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Student level</label>
+              <select id="lec-level">
+                <option value="beginner">Beginner</option>
+                <option value="intermediate" selected>Intermediate</option>
+                <option value="advanced">Advanced</option>
+                <option value="postgraduate">Postgraduate</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Learning goals (optional)</label>
+            <textarea id="lec-goals" rows="3"
+              placeholder="e.g. Students should understand network security fundamentals, threat detection, and incident response...">
+            </textarea>
+          </div>
+        </div>
+
+        <!-- Slide outline inputs -->
+        <div id="form-slides" class="hidden">
+          <div class="studio-card-title">🖼️ Slide Outline Details</div>
+          <div class="form-group">
+            <label>Lecture topic</label>
+            <input type="text" id="slide-topic"
+              placeholder="e.g. Zero Trust Architecture" />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Duration</label>
+              <select id="slide-duration">
+                <option value="30">30 minutes</option>
+                <option value="45">45 minutes</option>
+                <option value="60" selected>60 minutes</option>
+                <option value="90">90 minutes</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Audience level</label>
+              <select id="slide-level">
+                <option value="beginner">Beginner</option>
+                <option value="intermediate" selected>Intermediate</option>
+                <option value="advanced">Advanced</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Key points to cover (optional)</label>
+            <textarea id="slide-points" rows="3"
+              placeholder="e.g. Definition, history, key principles, real-world examples, case study...">
+            </textarea>
+          </div>
+        </div>
+
+        <!-- Assessment inputs -->
+        <div id="form-assessment" class="hidden">
+          <div class="studio-card-title">📝 Assessment Details</div>
+          <div class="form-group">
+            <label>Topic</label>
+            <input type="text" id="assess-topic"
+              placeholder="e.g. Network Intrusion Detection" />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Assessment type</label>
+              <select id="assess-type">
+                <option value="mcq">Multiple Choice (MCQ)</option>
+                <option value="casestudy">Case Study</option>
+                <option value="rubric">Grading Rubric</option>
+                <option value="mixed">Mixed Assessment</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Difficulty</label>
+              <select id="assess-difficulty">
+                <option value="easy">Easy</option>
+                <option value="medium" selected>Medium</option>
+                <option value="hard">Hard</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Number of questions</label>
+            <select id="assess-count">
+              <option value="5">5 questions</option>
+              <option value="10" selected>10 questions</option>
+              <option value="15">15 questions</option>
+              <option value="20">20 questions</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Bloom's taxonomy inputs -->
+        <div id="form-blooms" class="hidden">
+          <div class="studio-card-title">🌸 Bloom's Taxonomy Mapper</div>
+          <div class="form-group">
+            <label>Topic or learning content</label>
+            <input type="text" id="blooms-topic"
+              placeholder="e.g. Firewall configuration and management" />
+          </div>
+          <div class="form-group">
+            <label>Paste your current learning outcomes</label>
+            <textarea id="blooms-outcomes" rows="5"
+              placeholder="e.g.&#10;1. Students will understand firewall types&#10;2. Students will configure basic rules&#10;3. Students will analyze traffic logs...">
+            </textarea>
+          </div>
+        </div>
+
+        <!-- Discussion inputs -->
+        <div id="form-discussion" class="hidden">
+          <div class="studio-card-title">💬 Discussion Questions</div>
+          <div class="form-group">
+            <label>Topic</label>
+            <input type="text" id="disc-topic"
+              placeholder="e.g. Ethics of AI in surveillance" />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Question style</label>
+              <select id="disc-style">
+                <option value="socratic">Socratic</option>
+                <option value="debate">Debate prompts</option>
+                <option value="reflection">Reflective</option>
+                <option value="casebased">Case-based</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Number of questions</label>
+              <select id="disc-count">
+                <option value="5" selected>5 questions</option>
+                <option value="8">8 questions</option>
+                <option value="10">10 questions</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+
+      <!-- Generate button -->
+      <button class="studio-btn" id="studioBtn"
+              onclick="TEACHER.run()">
+        Generate ↗
+      </button>
+
+    </div>
+
+
+    <!-- ── Right panel: output ────────────────────────────── -->
+    <div class="studio-right">
+
+      <div class="output-header">
+        <div class="output-title" id="outputTitle">Output</div>
+        <button class="copy-btn hidden" id="copyBtn"
+                onclick="TEACHER.copyOutput()">
+          Copy all
+        </button>
+      </div>
+
+      <div class="output-feed" id="outputFeed">
+        <div class="output-empty">
+          Choose a tool and fill in the details on the left,
+          then press <strong>Generate</strong>.
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- ── Scripts ───────────────────────────────────────────── -->
+<script src="config.js"></script>
+<script src="api.js"></script>
+<script src="modules/teacher.js"></script>
+<script>
+
+document.addEventListener("DOMContentLoaded", () => {
+  const key      = sessionStorage.getItem("genai_api_key");
+  const provider = sessionStorage.getItem("genai_provider");
+
+  console.log("teacher.html reading — provider:", provider);
+  console.log("teacher.html reading — key prefix:", key?.substring(0,10));
+
+  if (!key || !provider) {
+    window.location.href = "index.html";
+    return;
+  }
+
+  API.setKey(key, provider);
+
+  console.log("API.activeProvider after setKey:", API.activeProvider);
+
+  document.getElementById("navProvider").textContent =
+    CONFIG.providers[provider]?.label || provider;
+  TEACHER.init();
+});
+</script>
+
+</body>
+</html>

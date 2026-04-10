@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GenAI Classroom — AI-Powered Learning Platform</title>
+  <meta name="description" content="Multi-mode AI learning platform." />
+  <link rel="stylesheet" href="style/main.css" />
+  <style>
+    /* ── Landing page specific ── */
+    .landing-hero {
+      text-align: center;
+      padding: 4rem 1rem 2.5rem;
+    }
+
+    .landing-hero .logo {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.20em;
+      text-transform: uppercase;
+      color: #a89ef5;
+      background: rgba(83,74,183,0.18);
+      border: 0.5px solid rgba(83,74,183,0.35);
+      border-radius: 999px;
+      padding: 4px 14px;
+      margin-bottom: 1.1rem;
+    }
+
+    .landing-hero h1 {
+      font-size: 48px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.03em;
+      line-height: 1.12;
+      margin-bottom: 0.75rem;
+    }
+
+    .landing-hero h1 span { color: #a89ef5; }
+
+    .landing-hero .tagline {
+      font-size: 16px;
+      color: rgba(255,255,255,0.55);
+      max-width: 500px;
+      margin: 0 auto 0.5rem;
+      line-height: 1.65;
+    }
+
+    .header-divider {
+      height: 1px;
+      background: linear-gradient(to right,
+        transparent, rgba(255,255,255,0.08), transparent);
+      margin: 2.5rem 0;
+    }
+
+    /* ── Provider selector ── */
+    .provider-section {
+      max-width: 640px;
+      margin: 0 auto 2.5rem;
+    }
+
+    .provider-section .section-title {
+      text-align: center;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.10em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+      margin-bottom: 1rem;
+    }
+
+    .provider-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 1.25rem;
+    }
+
+    .provider-card {
+      background: rgba(255,255,255,0.04);
+      border: 1.5px solid rgba(255,255,255,0.10);
+      border-radius: 14px;
+      padding: 1rem 1.1rem;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      position: relative;
+    }
+
+    .provider-card:hover {
+      background: rgba(255,255,255,0.07);
+      border-color: rgba(255,255,255,0.20);
+      transform: translateY(-2px);
+    }
+
+    .provider-card.selected {
+      background: rgba(83,74,183,0.18);
+      border-color: rgba(83,74,183,0.55);
+    }
+
+    .provider-card.recommended {
+      border-color: rgba(168,158,245,0.40);
+    }
+
+    .provider-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+
+    .provider-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: #ffffff;
+    }
+
+    .provider-badge {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 0.5px solid;
+    }
+
+    .provider-desc {
+      font-size: 12px;
+      color: rgba(255,255,255,0.45);
+      line-height: 1.5;
+    }
+
+    .recommended-tag {
+      position: absolute;
+      top: -1px;
+      right: 12px;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.10em;
+      text-transform: uppercase;
+      background: #a89ef5;
+      color: #1a1928;
+      padding: 2px 8px;
+      border-radius: 0 0 6px 6px;
+    }
+
+    .provider-check {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(255,255,255,0.20);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      transition: all 0.18s ease;
+    }
+
+    .provider-card.selected .provider-check {
+      background: #a89ef5;
+      border-color: #a89ef5;
+      color: #1a1928;
+    }
+
+    /* ── Key input ── */
+    .key-input-section {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 16px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .key-input-label {
+      font-size: 12px;
+      color: rgba(255,255,255,0.40);
+      margin-bottom: 0.6rem;
+    }
+
+    .key-input-label a {
+      color: #a89ef5;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .key-input-label a:hover { text-decoration: underline; }
+
+    .key-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .key-row input {
+      flex: 1;
+      font-size: 13px;
+      padding: 0.65rem 1rem;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px;
+      background: rgba(255,255,255,0.07);
+      color: #ffffff;
+      outline: none;
+      font-family: monospace;
+      letter-spacing: 0.03em;
+      transition: border-color 0.18s ease;
+    }
+
+    .key-row input:focus {
+      border-color: #a89ef5;
+      background: rgba(255,255,255,0.10);
+    }
+
+    .key-row input::placeholder {
+      color: rgba(255,255,255,0.25);
+      font-family: -apple-system, sans-serif;
+      letter-spacing: 0;
+    }
+
+    .key-row button {
+      font-size: 13px;
+      font-weight: 600;
+      padding: 0.65rem 1.4rem;
+      border-radius: 10px;
+      border: none;
+      background: #534AB7;
+      color: #fff;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.18s ease, transform 0.18s ease;
+    }
+
+    .key-row button:hover {
+      background: #3C3489;
+      transform: translateY(-1px);
+    }
+
+    .key-msg {
+      font-size: 12px;
+      margin-top: 0.6rem;
+      padding: 0.4rem 0.8rem;
+      border-radius: 8px;
+      display: none;
+    }
+
+    .key-msg.error   {
+      display: block;
+      background: rgba(163,45,45,0.20);
+      color: #f5a0a0;
+    }
+
+    .key-msg.success {
+      display: block;
+      background: rgba(59,109,17,0.20);
+      color: #90c96a;
+    }
+
+    /* ── Connected state ── */
+    .connected-bar {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 500;
+      color: #6ecfad;
+      background: rgba(15,110,86,0.15);
+      border: 0.5px solid rgba(15,110,86,0.35);
+      border-radius: 999px;
+      padding: 6px 16px 6px 12px;
+      margin: 0 auto 2rem;
+      width: fit-content;
+    }
+
+    .connected-bar.visible { display: flex; }
+
+    .connected-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #6ecfad;
+      animation: pulse 2s infinite;
+    }
+
+    .change-key-btn {
+      margin-left: 6px;
+      font-size: 11px;
+      color: rgba(255,255,255,0.30);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      transition: color 0.18s ease;
+    }
+
+    .change-key-btn:hover { color: #ffffff; }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1;   transform: scale(1);    }
+      50%       { opacity: 0.4; transform: scale(0.82); }
+    }
+
+    /* ── Mode cards ── */
+    .modes-section {
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    .modes-section .section-title {
+      text-align: center;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.10em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+      margin-bottom: 1.25rem;
+    }
+
+    .modes-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+
+    .mode-card {
+      background: rgba(255,255,255,0.04);
+      border: 1.5px solid rgba(255,255,255,0.10);
+      border-radius: 18px;
+      padding: 1.5rem 1.1rem 1.25rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.20s ease;
+      text-decoration: none;
+      display: block;
+      opacity: 0.45;
+      pointer-events: none;
+    }
+
+    .mode-card.unlocked {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .mode-card.unlocked:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.40);
+      border-color: rgba(255,255,255,0.22);
+    }
+
+    .mode-icon {
+      font-size: 32px;
+      margin-bottom: 0.85rem;
+      display: block;
+    }
+
+    .mode-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #ffffff;
+      margin-bottom: 0.4rem;
+    }
+
+    .mode-desc {
+      font-size: 12px;
+      color: rgba(255,255,255,0.45);
+      line-height: 1.55;
+      margin-bottom: 1rem;
+    }
+
+    .mode-tag {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      padding: 3px 10px;
+      border-radius: 999px;
+      border: 0.5px solid;
+    }
+
+    .mode-card.unlocked .mode-lock {
+      display: none;
+    }
+
+    .mode-lock {
+      font-size: 11px;
+      color: rgba(255,255,255,0.25);
+      margin-top: 0.5rem;
+    }
+
+    /* mode accent colors */
+    .mode-card[data-mode="debate"]   { --accent: rgba(168,158,245,0.25); --accent-border: rgba(168,158,245,0.40); }
+    .mode-card[data-mode="lab"]      { --accent: rgba(110,207,173,0.20); --accent-border: rgba(110,207,173,0.40); }
+    .mode-card[data-mode="teacher"]  { --accent: rgba(245,160,122,0.20); --accent-border: rgba(245,160,122,0.40); }
+    .mode-card[data-mode="research"] { --accent: rgba(122,184,245,0.20); --accent-border: rgba(122,184,245,0.40); }
+
+    .mode-card.unlocked[data-mode="debate"]   { background: var(--accent); border-color: var(--accent-border); }
+    .mode-card.unlocked[data-mode="lab"]      { background: var(--accent); border-color: var(--accent-border); }
+    .mode-card.unlocked[data-mode="teacher"]  { background: var(--accent); border-color: var(--accent-border); }
+    .mode-card.unlocked[data-mode="research"] { background: var(--accent); border-color: var(--accent-border); }
+
+    .mode-card[data-mode="debate"]   .mode-tag { color: #a89ef5; border-color: rgba(168,158,245,0.40); background: rgba(168,158,245,0.12); }
+    .mode-card[data-mode="lab"]      .mode-tag { color: #6ecfad; border-color: rgba(110,207,173,0.40); background: rgba(110,207,173,0.12); }
+    .mode-card[data-mode="teacher"]  .mode-tag { color: #f5a07a; border-color: rgba(245,160,122,0.40); background: rgba(245,160,122,0.12); }
+    .mode-card[data-mode="research"] .mode-tag { color: #7ab8f5; border-color: rgba(122,184,245,0.40); background: rgba(122,184,245,0.12); }
+
+    /* ── Footer ── */
+    .landing-footer {
+      text-align: center;
+      padding: 3rem 0 1rem;
+      font-size: 12px;
+      color: rgba(255,255,255,0.20);
+    }
+
+    .landing-footer span { color: rgba(255,255,255,0.35); }
+
+    /* ── Responsive ── */
+    @media (max-width: 700px) {
+      .landing-hero h1   { font-size: 32px; }
+      .provider-grid     { grid-template-columns: 1fr 1fr; }
+      .modes-grid        { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 440px) {
+      .landing-hero h1   { font-size: 26px; }
+      .provider-grid     { grid-template-columns: 1fr; }
+      .modes-grid        { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-wrapper">
+
+  <!-- ── Hero ─────────────────────────────────────────────── -->
+  <div class="landing-hero">
+    <div class="logo">AI-Cybersecurity &amp; AI Lab</div>
+    <h1>GenAI <span>Classroom-</span><span> AI-Cybersecurity</span></h1>
+    <p class="tagline">
+      Designed by CVA.
+    </p>
+  </div>
+
+  <div class="header-divider"></div>
+
+  <!-- ── Provider selector ─────────────────────────────────── -->
+  <div class="provider-section">
+    <div class="section-title">Step 1 — Choose your AI provider</div>
+
+    <div class="provider-grid" id="providerGrid">
+
+      <div class="provider-card selected"
+           data-provider="groq"
+           onclick="LANDING.selectProvider('groq', this)">
+        <div class="provider-check">✓</div>
+        <div class="provider-top">
+          <span class="provider-name">Groq</span>
+          <span class="provider-badge"
+                style="color:#6ecfad;border-color:rgba(110,207,173,0.4);background:rgba(110,207,173,0.12);">
+            Free
+          </span>
+        </div>
+        <div class="provider-desc">Fast and free — great for getting started</div>
+      </div>
+
+      <div class="provider-card"
+           data-provider="gemini"
+           onclick="LANDING.selectProvider('gemini', this)">
+        <div class="provider-check"></div>
+        <div class="provider-top">
+          <span class="provider-name">Google Gemini</span>
+          <span class="provider-badge"
+                style="color:#6ecfad;border-color:rgba(110,207,173,0.4);background:rgba(110,207,173,0.12);">
+            Free
+          </span>
+        </div>
+        <div class="provider-desc">Free tier with generous limits from Google</div>
+      </div>
+
+      <div class="provider-card"
+           data-provider="openrouter"
+           onclick="LANDING.selectProvider('openrouter', this)">
+        <div class="provider-check"></div>
+        <div class="provider-top">
+          <span class="provider-name">OpenRouter</span>
+          <span class="provider-badge"
+                style="color:#6ecfad;border-color:rgba(110,207,173,0.4);background:rgba(110,207,173,0.12);">
+            Free models
+          </span>
+        </div>
+        <div class="provider-desc">Access multiple free AI models in one place</div>
+      </div>
+
+      <div class="provider-card recommended"
+           data-provider="anthropic"
+           onclick="LANDING.selectProvider('anthropic', this)">
+        <div class="recommended-tag">★ Recommended</div>
+        <div class="provider-check"></div>
+        <div class="provider-top">
+          <span class="provider-name">Anthropic Claude</span>
+          <span class="provider-badge"
+                style="color:#a89ef5;border-color:rgba(168,158,245,0.4);background:rgba(168,158,245,0.12);">
+            Best quality
+          </span>
+        </div>
+        <div class="provider-desc">Most accurate and realistic AI responses</div>
+      </div>
+
+    </div>
+
+    <!-- ── Key input ── -->
+    <div class="key-input-section" id="keyInputSection">
+      <div class="key-input-label" id="keyInputLabel">
+        Paste your <strong>Groq</strong> API key below —
+        <a id="signupLink" href="https://console.groq.com/keys" target="_blank">
+          Get a free key ↗
+        </a>
+      </div>
+      <div class="key-row">
+        <input
+          type="password"
+          id="apiKeyInput"
+          placeholder="Paste your Groq key — starts with gsk_"
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <button onclick="LANDING.connectKey()">Connect ↗</button>
+      </div>
+      <div class="key-msg" id="keyMsg"></div>
+    </div>
+
+    <!-- ── Connected bar ── -->
+    <div class="connected-bar" id="connectedBar">
+      <span class="connected-dot"></span>
+      <span id="connectedLabel">Connected to Groq</span>
+      <button class="change-key-btn" onclick="LANDING.changeKey()">Change</button>
+    </div>
+
+  </div>
+
+  <!-- ── Mode cards ─────────────────────────────────────────── -->
+  <div class="modes-section">
+    <div class="section-title">Step 2 — Choose your mode</div>
+
+    <div class="modes-grid">
+
+      <a class="mode-card" data-mode="debate" href="debate.html" id="card-debate">
+        <span class="mode-icon">🎭</span>
+        <div class="mode-title">Debate Arena</div>
+        <div class="mode-desc">
+          Watch four AI experts debate real cybersecurity and AI topics,
+          then ask the panel your own questions.
+        </div>
+        <span class="mode-tag">Students</span>
+        <div class="mode-lock">🔒 Connect API key to unlock</div>
+      </a>
+
+      <a class="mode-card" data-mode="lab" href="lab.html" id="card-lab">
+        <span class="mode-icon">💻</span>
+        <div class="mode-title">Code Lab</div>
+        <div class="mode-desc">
+          Build real cybersecurity tools in Python with industry-standard
+          structure, step-by-step guidance, and auto error correction.
+        </div>
+        <span class="mode-tag">Students</span>
+        <div class="mode-lock">🔒 Connect API key to unlock</div>
+      </a>
+
+      <a class="mode-card" data-mode="teacher" href="teacher.html" id="card-teacher">
+        <span class="mode-icon">📚</span>
+        <div class="mode-title">Teacher Studio</div>
+        <div class="mode-desc">
+          Plan lecture series, build slide outlines, generate assessments,
+          and map learning outcomes to Bloom's taxonomy.
+        </div>
+        <span class="mode-tag">Teachers</span>
+        <div class="mode-lock">🔒 Connect API key to unlock</div>
+      </a>
+
+      <a class="mode-card" data-mode="research" href="research.html" id="card-research">
+        <span class="mode-icon">🔬</span>
+        <div class="mode-title">Research Supervisor</div>
+        <div class="mode-desc">
+          Get PhD-level feedback on your research paper, methodology,
+          literature gaps, and reviewer responses.
+        </div>
+        <span class="mode-tag">Researchers</span>
+        <div class="mode-lock">🔒 Connect API key to unlock</div>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- ── Footer ─────────────────────────────────────────────── -->
+  <div class="landing-footer">
+    <span>Built for education-Cybersecurity &amp; AI Lab</span> ·
+     
+  </div>
+
+</div>
+
+
+<!-- ── Scripts ────────────────────────────────────────────── -->
+<script src="config.js"></script>
+<script src="api.js"></script>
+<script>
+
+const LANDING = {
+
+  selectProvider(providerId, el) {
+    LANDING.selectedProvider = providerId;
+    const provider = CONFIG.providers[providerId];
+
+    document.querySelectorAll(".provider-card").forEach(c => {
+      c.classList.remove("selected");
+      c.querySelector(".provider-check").textContent = "";
+    });
+    el.classList.add("selected");
+    el.querySelector(".provider-check").textContent = "✓";
+
+    document.getElementById("keyInputLabel").innerHTML = `
+      Paste your <strong>${provider.label}</strong> API key below —
+      <a href="${provider.signupUrl}" target="_blank">Get a free key ↗</a>
+    `;
+    document.getElementById("apiKeyInput").placeholder = provider.keyHint;
+    document.getElementById("keyMsg").className = "key-msg";
+    document.getElementById("apiKeyInput").value = "";
+  },
+
+
+  // ── Connect key ─────────────────────────────────────────
+  connectKey() {
+    const key      = document.getElementById("apiKeyInput").value.trim();
+    const provider = CONFIG.providers[LANDING.selectedProvider];
+
+    if (!key) {
+      LANDING._showMsg("Please paste your API key first.", "error");
+      return;
+    }
+
+    if (!key.startsWith(provider.keyPrefix)) {
+      LANDING._showMsg(
+        `Invalid key format. ${provider.label} keys start with ${provider.keyPrefix}`,
+        "error"
+      );
+      return;
+    }
+
+    API.setKey(key, LANDING.selectedProvider);
+
+    sessionStorage.setItem("genai_api_key",  key);
+    sessionStorage.setItem("genai_provider", LANDING.selectedProvider);
+
+    document.getElementById("keyInputSection").style.display    = "none";
+    document.getElementById("providerGrid").style.opacity       = "0.5";
+    document.getElementById("providerGrid").style.pointerEvents = "none";
+
+    const bar = document.getElementById("connectedBar");
+    bar.classList.add("visible");
+    document.getElementById("connectedLabel").textContent =
+      `Connected to ${provider.label}`;
+
+    document.querySelectorAll(".mode-card").forEach(c => {
+      c.classList.add("unlocked");
+    });
+
+    LANDING._showMsg("", "");
+  },
+
+
+  // ── Change key ──────────────────────────────────────────
+  changeKey() {
+    sessionStorage.removeItem("genai_api_key");
+    sessionStorage.removeItem("genai_provider");
+
+    document.getElementById("keyInputSection").style.display = "block";
+    document.getElementById("providerGrid").style.opacity    = "1";
+    document.getElementById("providerGrid").style.pointerEvents = "auto";
+    document.getElementById("connectedBar").classList.remove("visible");
+    document.getElementById("apiKeyInput").value = "";
+
+    document.querySelectorAll(".mode-card").forEach(c => {
+      c.classList.remove("unlocked");
+    });
+  },
+
+
+  // ── Show message ─────────────────────────────────────────
+  _showMsg(text, type) {
+    const msg       = document.getElementById("keyMsg");
+    msg.textContent = text;
+    msg.className   = `key-msg ${type}`;
+  },
+
+
+  // ── Restore session if key already saved ─────────────────
+  restoreSession() {
+    const key      = sessionStorage.getItem("genai_api_key");
+    const provider = sessionStorage.getItem("genai_provider");
+    if (!key || !provider) return;
+
+    API.setKey(key, provider);
+    LANDING.selectedProvider = provider;
+
+    document.getElementById("keyInputSection").style.display    = "none";
+    document.getElementById("providerGrid").style.opacity       = "0.5";
+    document.getElementById("providerGrid").style.pointerEvents = "none";
+
+    const bar = document.getElementById("connectedBar");
+    bar.classList.add("visible");
+    document.getElementById("connectedLabel").textContent =
+      `Connected to ${CONFIG.providers[provider]?.label || provider}`;
+
+    document.querySelectorAll(".mode-card").forEach(c => {
+      c.classList.add("unlocked");
+    });
+  }
+
+};
+
+document.addEventListener("DOMContentLoaded", () => LANDING.restoreSession());
+document.getElementById("apiKeyInput")
+  .addEventListener("keydown", e => {
+    if (e.key === "Enter") LANDING.connectKey();
+  });
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Research Supervisor — GenAI Classroom</title>
+  <link rel="stylesheet" href="style/main.css" />
+  <link rel="stylesheet" href="style/research.css" />
+</head>
+<body>
+
+<div class="app-wrapper">
+
+  <!-- ── Top nav ───────────────────────────────────────────── -->
+  <nav class="top-nav">
+    <a href="index.html" class="nav-back">← Back</a>
+    <div class="nav-center">
+      <span class="nav-logo">GenAI Classroom</span>
+      <span class="nav-mode research-mode">🔬 Research Supervisor</span>
+    </div>
+    <div class="nav-right">
+      <span class="nav-provider" id="navProvider">—</span>
+    </div>
+  </nav>
+
+
+  <!-- ── Page header ───────────────────────────────────────── -->
+  <div class="page-header">
+    <h1>Research <span>Supervisor</span></h1>
+    <p class="page-tagline">
+      Get PhD-level guidance on your research paper, methodology,
+      literature gaps, writing quality, and reviewer responses.
+    </p>
+  </div>
+
+  <div class="header-divider"></div>
+
+
+  <!-- ── Two column layout ─────────────────────────────────── -->
+  <div class="research-layout">
+
+    <!-- ── Left panel ────────────────────────────────────────── -->
+    <div class="research-left">
+
+      <!-- Tool selector -->
+      <div class="research-card">
+        <div class="research-card-title">🛠️ Choose a tool</div>
+        <div class="tool-list">
+
+          <div class="tool-item selected" data-tool="structure"
+               onclick="RESEARCH.selectTool('structure', this)">
+            <span class="tool-icon">📐</span>
+            <div class="tool-text">
+              <div class="tool-title">Paper Structure Advisor</div>
+              <div class="tool-desc">
+                Review and improve your paper structure
+              </div>
+            </div>
+          </div>
+
+          <div class="tool-item" data-tool="litreview"
+               onclick="RESEARCH.selectTool('litreview', this)">
+            <span class="tool-icon">📚</span>
+            <div class="tool-text">
+              <div class="tool-title">Literature Gap Finder</div>
+              <div class="tool-desc">
+                Identify gaps and position your contribution
+              </div>
+            </div>
+          </div>
+
+          <div class="tool-item" data-tool="methodology"
+               onclick="RESEARCH.selectTool('methodology', this)">
+            <span class="tool-icon">🔭</span>
+            <div class="tool-text">
+              <div class="tool-title">Methodology Advisor</div>
+              <div class="tool-desc">
+                Get guidance on research design and methods
+              </div>
+            </div>
+          </div>
+
+          <div class="tool-item" data-tool="writing"
+               onclick="RESEARCH.selectTool('writing', this)">
+            <span class="tool-icon">✍️</span>
+            <div class="tool-text">
+              <div class="tool-title">Writing Reviewer</div>
+              <div class="tool-desc">
+                Academic tone, clarity, and contribution check
+              </div>
+            </div>
+          </div>
+
+          <div class="tool-item" data-tool="reviewer"
+               onclick="RESEARCH.selectTool('reviewer', this)">
+            <span class="tool-icon">💬</span>
+            <div class="tool-text">
+              <div class="tool-title">Reviewer Response Helper</div>
+              <div class="tool-desc">
+                Craft point-by-point responses to reviewers
+              </div>
+            </div>
+          </div>
+
+          <div class="tool-item" data-tool="abstract"
+               onclick="RESEARCH.selectTool('abstract', this)">
+            <span class="tool-icon">📝</span>
+            <div class="tool-text">
+              <div class="tool-title">Abstract Writer</div>
+              <div class="tool-desc">
+                Generate or improve your paper abstract
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+
+      <!-- Dynamic input form -->
+      <div class="research-card" id="inputForm">
+
+        <!-- Paper structure -->
+        <div id="form-structure">
+          <div class="research-card-title">📐 Paper Details</div>
+          <div class="form-group">
+            <label>Paper title</label>
+            <input type="text" id="str-title"
+              placeholder="e.g. A Novel GNN-Based Intrusion Detection System..." />
+          </div>
+          <div class="form-group">
+            <label>Research area</label>
+            <input type="text" id="str-area"
+              placeholder="e.g. Cybersecurity, AI, Network Security..." />
+          </div>
+          <div class="form-group">
+            <label>Target venue</label>
+            <select id="str-venue">
+              <option value="ieee">IEEE Transaction / Conference</option>
+              <option value="acm">ACM Conference / Journal</option>
+              <option value="springer">Springer Journal</option>
+              <option value="elsevier">Elsevier Journal</option>
+              <option value="frontiers">Frontiers Journal</option>
+              <option value="arxiv">arXiv Preprint</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Paste your abstract or introduction</label>
+            <textarea id="str-content" rows="6"
+              placeholder="Paste your abstract or introduction section here for review...">
+            </textarea>
+          </div>
+        </div>
+
+        <!-- Literature gap -->
+        <div id="form-litreview" class="hidden">
+          <div class="research-card-title">📚 Literature Gap Finder</div>
+          <div class="form-group">
+            <label>Research topic</label>
+            <input type="text" id="lit-topic"
+              placeholder="e.g. Deep learning for network intrusion detection" />
+          </div>
+          <div class="form-group">
+            <label>Your proposed approach</label>
+            <textarea id="lit-approach" rows="4"
+              placeholder="Describe what your paper proposes that is different from existing work...">
+            </textarea>
+          </div>
+          <div class="form-group">
+            <label>Key papers you already know (optional)</label>
+            <textarea id="lit-papers" rows="3"
+              placeholder="e.g. Smith 2022 proposed X, Jones 2023 used Y...">
+            </textarea>
+          </div>
+        </div>
+
+        <!-- Methodology -->
+        <div id="form-methodology" class="hidden">
+          <div class="research-card-title">🔭 Methodology Details</div>
+          <div class="form-group">
+            <label>Research problem</label>
+            <textarea id="meth-problem" rows="3"
+              placeholder="Describe the problem your research is solving...">
+            </textarea>
+          </div>
+          <div class="form-group">
+            <label>Research type</label>
+            <select id="meth-type">
+              <option value="experimental">Experimental / Empirical</option>
+              <option value="survey">Survey / Systematic Review</option>
+              <option value="theoretical">Theoretical / Formal</option>
+              <option value="design">Design Science</option>
+              <option value="mixed">Mixed Methods</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Current methodology (optional)</label>
+            <textarea id="meth-current" rows="3"
+              placeholder="Describe your current approach or what you have tried so far...">
+            </textarea>
+          </div>
+        </div>
+
+        <!-- Writing review -->
+        <div id="form-writing" class="hidden">
+          <div class="research-card-title">✍️ Writing Review</div>
+          <div class="form-group">
+            <label>Section to review</label>
+            <select id="write-section">
+              <option value="abstract">Abstract</option>
+              <option value="introduction">Introduction</option>
+              <option value="literature">Literature Review</option>
+              <option value="methodology">Methodology</option>
+              <option value="results">Results & Discussion</option>
+              <option value="conclusion">Conclusion</option>
+              <option value="full">Full Paper</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Paste your text</label>
+            <textarea id="write-content" rows="8"
+              placeholder="Paste the section text you want reviewed...">
+            </textarea>
+          </div>
+        </div>
+
+        <!-- Reviewer response -->
+        <div id="form-reviewer" class="hidden">
+          <div class="research-card-title">💬 Reviewer Response</div>
+          <div class="form-group">
+            <label>Reviewer comment</label>
+            <textarea id="rev-comment" rows="4"
+              placeholder="Paste the reviewer comment you need to respond to...">
+            </textarea>
+          </div>
+          <div class="form-group">
+            <label>Your paper context</label>
+            <textarea id="rev-context" rows="3"
+              placeholder="Briefly describe your paper and what you changed to address this comment...">
+            </textarea>
+          </div>
+          <div class="form-group">
+            <label>Response tone</label>
+            <select id="rev-tone">
+              <option value="formal">Formal and respectful</option>
+              <option value="assertive">Assertive but polite</option>
+              <option value="detailed">Detailed with evidence</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Abstract writer -->
+        <div id="form-abstract" class="hidden">
+          <div class="research-card-title">📝 Abstract Details</div>
+          <div class="form-group">
+            <label>Paper title</label>
+            <input type="text" id="abs-title"
+              placeholder="Your paper title..." />
+          </div>
+          <div class="form-group">
+            <label>Research problem</label>
+            <textarea id="abs-problem" rows="2"
+              placeholder="What problem does your paper solve?">
+            </textarea>
+          </div>
+          <div class="form-group">
+            <label>Proposed solution / method</label>
+            <textarea id="abs-method" rows="2"
+              placeholder="What approach did you use?">
+            </textarea>
+          </div>
+          <div class="form-group">
+            <label>Key results</label>
+            <textarea id="abs-results" rows="2"
+              placeholder="e.g. 97.61% accuracy, AUC 0.9962, 2.72ms detection time...">
+            </textarea>
+          </div>
+          <div class="form-group">
+            <label>Target venue word limit</label>
+            <select id="abs-limit">
+              <option value="150">150 words (IEEE)</option>
+              <option value="200">200 words (standard)</option>
+              <option value="250">250 words (extended)</option>
+              <option value="300">300 words (journal)</option>
+            </select>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Generate button -->
+      <button class="research-btn" id="researchBtn"
+              onclick="RESEARCH.run()">
+        Get Feedback ↗
+      </button>
+
+    </div>
+
+
+    <!-- ── Right panel: output ────────────────────────────── -->
+    <div class="research-right">
+
+      <div class="output-header">
+        <div class="output-title" id="outputTitle">Output</div>
+        <button class="copy-btn hidden" id="copyBtn"
+                onclick="RESEARCH.copyOutput()">
+          Copy all
+        </button>
+      </div>
+
+      <div class="output-feed" id="outputFeed">
+        <div class="output-empty">
+          Choose a tool and fill in the details on the left,
+          then press <strong>Get Feedback</strong>.
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- ── Scripts ───────────────────────────────────────────── -->
+<script src="config.js"></script>
+<script src="api.js"></script>
+<script src="modules/research.js"></script>
+<script>
+
+document.addEventListener("DOMContentLoaded", () => {
+  const key      = sessionStorage.getItem("genai_api_key");
+  const provider = sessionStorage.getItem("genai_provider");
+  if (!key || !provider) {
+    window.location.href = "index.html";
+    return;
+  }
+  API.setKey(key, provider);
+  document.getElementById("navProvider").textContent =
+    CONFIG.providers[provider]?.label || provider;
+  RESEARCH.init();
+});
+
+</script>
+
+</body>
+</html>
