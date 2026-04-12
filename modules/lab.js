@@ -147,27 +147,42 @@ web apps, data science, automation, games, APIs, or anything else.`;
     const refined = document.getElementById("refinedText").textContent;
     if (!refined) return;
 
-    // put into the code input textarea
-    document.getElementById("codeInput").value = refined;
+    // step 1 — auto select Custom Project
+    this.selectedProject = "custom";
+    document.querySelectorAll(".project-item").forEach(p => {
+      p.classList.remove("selected");
+    });
+    const customCard = document.querySelector('[data-project="custom"]');
+    if (customCard) customCard.classList.add("selected");
 
-    // also update custom project name if custom is selected
-    if (this.selectedProject === "custom") {
-      document.getElementById("customProjectName").value = refined;
-    }
+    // step 2 — show custom input and fill it with refined prompt
+    document.getElementById("customInput").classList.remove("hidden");
+    const customName = document.getElementById("customProjectName");
+    customName.value = refined;
+    customName.style.borderColor = "#6ecfad";
+    setTimeout(() => { customName.style.borderColor = ""; }, 1500);
 
-    // scroll to generate button
-    document.getElementById("labBtn").scrollIntoView({ behavior: "smooth" });
+    // step 3 — auto select "Generate full project" mode
+    this.selectedMode = "generate";
+    document.querySelectorAll(".mode-item").forEach(m => {
+      m.classList.remove("selected");
+    });
+    const generateCard = document.querySelector('[data-mode="generate"]');
+    if (generateCard) generateCard.classList.add("selected");
 
-    // hide the refined box
+    // step 4 — clear the additional requirements box
+    document.getElementById("codeInput").value = "";
+
+    // step 5 — update button label
+    this._updateInputCard();
+
+    // step 6 — hide refiner box and clear rough idea
     document.getElementById("refinedBox").classList.add("hidden");
     document.getElementById("roughIdea").value = "";
 
-    // flash the input to show it was filled
-    const input = document.getElementById("codeInput");
-    input.style.borderColor = "#6ecfad";
-    setTimeout(() => { input.style.borderColor = ""; }, 1500);
+    // step 7 — scroll to generate button smoothly
+    document.getElementById("labBtn").scrollIntoView({ behavior: "smooth" });
   },
-
 
   // ── Discard refined prompt ────────────────────────────────
   discardRefined() {
