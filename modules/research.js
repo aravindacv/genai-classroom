@@ -25,6 +25,23 @@ const RESEARCH = {
     el.classList.add("selected");
     this._showForm(toolId);
     this._updateBtn(toolId);
+
+    const labels = {
+      structure:   "I want feedback on the structure of my research paper",
+      litreview:   "I want to find gaps in the literature for my research topic",
+      methodology: "I need advice on the research methodology for my study",
+      writing:     "I want my writing reviewed for academic quality and clarity",
+      reviewer:    "I need help responding to a reviewer comment on my paper",
+      abstract:    "I want to write or improve the abstract for my paper"
+    };
+
+    const roughIdea = document.getElementById("roughIdea");
+    roughIdea.value = labels[toolId] || "";
+    document.getElementById("refinedBox").classList.add("hidden");
+    document.getElementById("refinedText").textContent = "";
+    roughIdea.style.borderColor = "#7ab8f5";
+    setTimeout(() => { roughIdea.style.borderColor = ""; }, 1500);
+    roughIdea.scrollIntoView({ behavior: "smooth", block: "center" });
   },
 
 
@@ -77,7 +94,7 @@ const RESEARCH = {
         const title   = document.getElementById("str-title").value.trim()
           || "Untitled Paper";
         const area    = document.getElementById("str-area").value.trim()
-          || "Cybersecurity";
+          || "Research";
         const venue   = document.getElementById("str-venue").value;
         const content = document.getElementById("str-content").value.trim();
         systemPrompt  = this._promptStructure();
@@ -85,26 +102,28 @@ const RESEARCH = {
 Title: ${title}
 Area: ${area}
 Target venue: ${venue}
-${content ? `Abstract/Introduction:\n${content}` : "No content provided — give general guidance for this venue."}`;
+${content
+  ? `Abstract/Introduction:\n${content}`
+  : "No content provided — give general guidance for this venue."}`;
         break;
       }
 
       case "litreview": {
         const topic    = document.getElementById("lit-topic").value.trim()
-          || "Cybersecurity";
+          || "Research topic";
         const approach = document.getElementById("lit-approach").value.trim();
         const papers   = document.getElementById("lit-papers").value.trim();
         systemPrompt   = this._promptLitReview();
         userMessage    = `Find literature gaps for:
 Topic: ${topic}
 ${approach ? `My proposed approach: ${approach}` : ""}
-${papers   ? `Papers I know: ${papers}` : ""}`;
+${papers   ? `Papers I know: ${papers}`           : ""}`;
         break;
       }
 
       case "methodology": {
         const problem = document.getElementById("meth-problem").value.trim()
-          || "Cybersecurity research problem";
+          || "Research problem";
         const type    = document.getElementById("meth-type").value;
         const current = document.getElementById("meth-current").value.trim();
         systemPrompt  = this._promptMethodology();
@@ -261,15 +280,115 @@ ${results ? `Results: ${results}` : ""}`;
   },
 
 
+  // ── Refine rough idea into proper prompt ──────────────────
+  async refineIdea() {
+    const rough = document.getElementById("roughIdea").value.trim();
+    const btn   = document.getElementById("refineBtn");
+    const box   = document.getElementById("refinedBox");
+
+    if (!rough) {
+      btn.textContent = "Please type your idea first";
+      setTimeout(() => { btn.textContent = "Refine my idea ↗"; }, 2000);
+      return;
+    }
+
+    btn.disabled    = true;
+    btn.textContent = "Refining...";
+    box.classList.add("hidden");
+
+    const systemPrompt = `You are an expert prompt engineer helping
+university researchers and PhD students write clear, effective prompts
+for an AI research supervisor.
+
+Your task is to take a researcher's rough idea and convert it into a
+well-structured, specific prompt that will get the best possible
+academic feedback from the AI.
+
+RULES:
+1. Keep the researcher's original intent — do not change what they want
+2. Make it specific — add academic details they forgot to mention
+3. Make it clear — remove ambiguity
+4. Keep it concise — max 3 sentences
+5. Output ONLY the refined prompt — no explanation, no preamble
+6. Write it as a direct instruction to the AI supervisor
+7. Do not use bullet points — write as one flowing prompt
+8. Work for ANY research discipline — not just cybersecurity`;
+
+    const userMessage = `Convert this rough research idea into a
+proper prompt: "${rough}"
+
+Context: This is for an AI research supervisor that helps with
+paper structure, literature review, methodology, writing quality,
+reviewer responses, and abstract writing across any academic field.`;
+
+    const text = await API.call(
+      systemPrompt,
+      [{ role: "user", content: userMessage }]
+    );
+
+    document.getElementById("refinedText").textContent = text.trim();
+    box.classList.remove("hidden");
+    btn.disabled    = false;
+    btn.textContent = "Refine my idea ↗";
+  },
+
+
+  // ── Use refined prompt ────────────────────────────────────
+  useRefined() {
+    const refined = document.getElementById("refinedText").textContent;
+    if (!refined) return;
+
+    const activeForm = document.getElementById(`form-${this.selectedTool}`);
+    const firstInput = activeForm.querySelector("input, textarea");
+    if (firstInput) {
+      firstInput.value = refined;
+      firstInput.style.borderColor = "#7ab8f5";
+      setTimeout(() => { firstInput.style.borderColor = ""; }, 1500);
+    }
+
+    document.getElementById("researchBtn").scrollIntoView({ behavior: "smooth" });
+    document.getElementById("refinedBox").classList.add("hidden");
+    document.getElementById("roughIdea").value = "";
+
+    const btn = document.getElementById("researchBtn");
+    btn.style.background = "#0C447C";
+    setTimeout(() => { btn.style.background = ""; }, 1500);
+  },
+
+
+  // ── Discard refined prompt ────────────────────────────────
+  discardRefined() {
+    document.getElementById("refinedBox").classList.add("hidden");
+    document.getElementById("roughIdea").value = "";
+  },
+
+
+  // ── Clear everything for a fresh question ─────────────────
+  clearRefiner() {
+    document.getElementById("refinedBox").classList.add("hidden");
+    document.getElementById("roughIdea").value = "";
+
+    const activeForm = document.getElementById(`form-${this.selectedTool}`);
+    const firstInput = activeForm.querySelector("input, textarea");
+    if (firstInput) firstInput.value = "";
+
+    document.getElementById("outputFeed").innerHTML = `
+      <div class="output-empty">
+        Choose a tool and fill in the details on the left,
+        then press <strong>Get Feedback</strong>.
+      </div>`;
+    document.getElementById("copyBtn").classList.add("hidden");
+    document.getElementById("outputTitle").textContent = "Output";
+    document.getElementById("roughIdea").focus();
+  },
+
+
   // ── System prompts ────────────────────────────────────────
 
   _promptStructure() {
     return `You are a senior academic supervisor and expert reviewer
 with 20 years of experience publishing in top-tier venues across
 multiple disciplines.
-
-Your task is to review the structure and positioning of a research
-paper and provide actionable PhD-supervisor-level feedback.
 
 REVIEW THESE DIMENSIONS:
 1. TITLE — specific, informative, publication-ready?
@@ -286,9 +405,7 @@ FOR EACH DIMENSION:
 - Provide an example improvement where needed
 
 End with top 3 priority improvements and overall readiness.
-
-Be direct, constructive, and specific. Sound like a real
-supervisor who has reviewed hundreds of papers.`;
+Be direct, constructive, and specific.`;
   },
 
 
@@ -297,57 +414,46 @@ supervisor who has reviewed hundreds of papers.`;
 current state of the art across academic disciplines.
 
 YOUR TASK:
-1. EXISTING WORK — summarize main research directions in 3 to 4
-   sentences.
-2. KEY LIMITATIONS — what are the main limitations of existing
-   approaches?
+1. EXISTING WORK — summarize main research directions in 3 to 4 sentences.
+2. KEY LIMITATIONS — main limitations of existing approaches.
 3. RESEARCH GAPS — identify 4 to 6 specific gaps in the literature.
 4. POSITIONING — how does the proposed approach address these gaps?
 5. DIFFERENTIATION — what makes this contribution novel?
-6. SUGGESTED CITATIONS — describe 3 to 5 types of highly relevant
-   papers to cite.
-7. CONTRIBUTION STATEMENT — draft a 2 to 3 sentence contribution
-   statement.
+6. SUGGESTED CITATIONS — describe 3 to 5 types of relevant papers.
+7. CONTRIBUTION STATEMENT — draft a 2 to 3 sentence statement.
 
-Be specific, academically rigorous, and research-oriented.
-Sound like a real researcher who reads papers every day.`;
+Be specific, academically rigorous, and research-oriented.`;
   },
 
 
   _promptMethodology() {
     return `You are a research methodology expert with experience
-across quantitative, qualitative, and mixed methods research in
-multiple academic disciplines.
+across quantitative, qualitative, and mixed methods research.
 
 YOUR TASK:
 1. METHODOLOGY ASSESSMENT — evaluate the current approach if given.
-2. RECOMMENDED APPROACH — suggest the most suitable methodology
-   with clear justification.
+2. RECOMMENDED APPROACH — suggest the most suitable methodology.
 3. RESEARCH DESIGN — outline a step-by-step research design.
 4. EVALUATION METRICS — what metrics should be used?
-5. DATA SOURCES — what datasets or data sources are appropriate?
+5. DATA SOURCES — what datasets or sources are appropriate?
 6. BASELINES — what baseline methods should be compared against?
-7. VALIDITY THREATS — main threats to validity and how to address.
+7. VALIDITY THREATS — main threats and how to address them.
 8. COMMON PITFALLS — mistakes to avoid in this type of research.
 
-Be rigorous, practical, and specific. Sound like a real
-methodology advisor who supervises PhD students.`;
+Be rigorous, practical, and specific.`;
   },
 
 
   _promptWriting(section) {
-    return `You are an expert academic editor and research supervisor
-with experience reviewing papers across all disciplines.
-
-Your task is to review and improve a ${section} section.
+    return `You are an expert academic editor reviewing a ${section} section.
 
 REVIEW THESE DIMENSIONS:
 1. ACADEMIC TONE — formal and precise?
-2. CLARITY — ideas expressed clearly and unambiguously?
+2. CLARITY — ideas expressed clearly?
 3. STRUCTURE — logically organized?
-4. CONTRIBUTION CLARITY — argument or contribution clear?
+4. CONTRIBUTION CLARITY — argument clear?
 5. FLOW — natural flow between paragraphs?
-6. CONCISENESS — unnecessary repetition or padding?
+6. CONCISENESS — unnecessary repetition?
 7. GRAMMAR — grammatical or stylistic issues?
 
 FOR EACH ISSUE:
@@ -356,40 +462,32 @@ FOR EACH ISSUE:
 - Provide an improved rewrite
 
 End with overall score out of 10, top 3 improvements, and
-what is written well.
-
-Be specific, constructive, and provide concrete rewrites.
-Sound like a real academic editor who improves papers for
-publication every day.`;
+what is written well.`;
   },
 
 
   _promptReviewer(tone) {
-    return `You are an experienced academic researcher helping a
-colleague craft a ${tone} response to a peer reviewer comment.
+    return `You are an experienced academic researcher helping craft
+a ${tone} response to a peer reviewer comment.
 
 YOUR TASK:
-1. UNDERSTAND THE CONCERN — summarize what the reviewer is asking
-   for in plain English.
-2. CLASSIFY THE COMMENT — major concern, minor issue,
-   misunderstanding, or suggestion?
-3. DRAFT RESPONSE — write a complete professional response that:
+1. UNDERSTAND THE CONCERN — summarize what the reviewer is asking.
+2. CLASSIFY THE COMMENT — major concern, minor issue, or suggestion?
+3. DRAFT RESPONSE — complete professional response that:
    - Acknowledges the reviewer respectfully
    - Explains what changes were made or why not
    - References specific sections where possible
-   - Uses formal academic language
-4. SUGGESTED PAPER CHANGE — what to add or change in the paper.
+4. SUGGESTED PAPER CHANGE — what to add or change.
 5. ALTERNATIVE RESPONSE — a shorter alternative version.
 
-Sound like a confident experienced researcher — not defensive,
-but collaborative and constructive. This should read as if
-written by a real human academic, not an AI assistant.`;
+Sound like a confident experienced researcher — collaborative
+and constructive, not defensive.`;
   },
 
 
   _promptAbstract() {
-    return `You are an expert academic writer with experience writing
-abstracts for top-tier journals and conferences across all disciplines.
+    return `You are an expert academic writer writing abstracts for
+top-tier journals and conferences across all disciplines.
 
 ABSTRACT STRUCTURE — follow strictly:
 1. CONTEXT — the broader problem area (1 sentence)
@@ -398,16 +496,13 @@ ABSTRACT STRUCTURE — follow strictly:
 4. RESULTS — key quantitative results (1 to 2 sentences)
 5. CONTRIBUTION — significance of the work (1 sentence)
 
-STRICT REQUIREMENTS:
+REQUIREMENTS:
 - Stay within the specified word limit
 - Use active voice where possible
 - Include specific quantitative results
-- Avoid vague claims — be precise
-- No citations in the abstract
-- No undefined acronyms
+- No citations, no undefined acronyms
 
-Write exactly one abstract — clean, precise, publication-ready.
-Sound like a real researcher who has published dozens of papers.`;
+Write exactly one abstract — clean, precise, publication-ready.`;
   }
 
 };

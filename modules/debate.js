@@ -31,12 +31,16 @@ const DEBATE = {
   // onStatus  : callback(statusText)         — called for status updates
   // onComplete: callback()                   — called when debate ends
 
-  async start(topicId, onMessage, onStatus, onComplete) {
+  async start(topicOrId, onMessage, onStatus, onComplete) {
     if (this.isRunning) return;
 
-    const topic = CONFIG.topics.find(t => t.id === topicId);
-    if (!topic) { onStatus("Invalid topic selected."); return; }
+    // accept either a topic object or a topic id string
+    const topic = typeof topicOrId === "object"
+      ? topicOrId
+      : CONFIG.topics.find(t => t.id === topicOrId);
 
+    if (!topic) { onStatus("Invalid topic selected."); return; }
+    
     if (!API.isKeySet()) {
       onStatus("API key not set. Please add your key in api.js.");
       return;

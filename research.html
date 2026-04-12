@@ -23,7 +23,6 @@
     </div>
   </nav>
 
-
   <!-- ── Page header ───────────────────────────────────────── -->
   <div class="page-header">
     <h1>Research <span>Supervisor</span></h1>
@@ -34,7 +33,6 @@
   </div>
 
   <div class="header-divider"></div>
-
 
   <!-- ── Two column layout ─────────────────────────────────── -->
   <div class="research-layout">
@@ -52,9 +50,7 @@
             <span class="tool-icon">📐</span>
             <div class="tool-text">
               <div class="tool-title">Paper Structure Advisor</div>
-              <div class="tool-desc">
-                Review and improve your paper structure
-              </div>
+              <div class="tool-desc">Review and improve your paper structure</div>
             </div>
           </div>
 
@@ -63,9 +59,7 @@
             <span class="tool-icon">📚</span>
             <div class="tool-text">
               <div class="tool-title">Literature Gap Finder</div>
-              <div class="tool-desc">
-                Identify gaps and position your contribution
-              </div>
+              <div class="tool-desc">Identify gaps and position your contribution</div>
             </div>
           </div>
 
@@ -74,9 +68,7 @@
             <span class="tool-icon">🔭</span>
             <div class="tool-text">
               <div class="tool-title">Methodology Advisor</div>
-              <div class="tool-desc">
-                Get guidance on research design and methods
-              </div>
+              <div class="tool-desc">Get guidance on research design and methods</div>
             </div>
           </div>
 
@@ -85,9 +77,7 @@
             <span class="tool-icon">✍️</span>
             <div class="tool-text">
               <div class="tool-title">Writing Reviewer</div>
-              <div class="tool-desc">
-                Academic tone, clarity, and contribution check
-              </div>
+              <div class="tool-desc">Academic tone, clarity, and contribution check</div>
             </div>
           </div>
 
@@ -96,9 +86,7 @@
             <span class="tool-icon">💬</span>
             <div class="tool-text">
               <div class="tool-title">Reviewer Response Helper</div>
-              <div class="tool-desc">
-                Craft point-by-point responses to reviewers
-              </div>
+              <div class="tool-desc">Craft point-by-point responses to reviewers</div>
             </div>
           </div>
 
@@ -107,15 +95,12 @@
             <span class="tool-icon">📝</span>
             <div class="tool-text">
               <div class="tool-title">Abstract Writer</div>
-              <div class="tool-desc">
-                Generate or improve your paper abstract
-              </div>
+              <div class="tool-desc">Generate or improve your paper abstract</div>
             </div>
           </div>
 
         </div>
       </div>
-
 
       <!-- Dynamic input form -->
       <div class="research-card" id="inputForm">
@@ -236,7 +221,7 @@
           <div class="form-group">
             <label>Your paper context</label>
             <textarea id="rev-context" rows="3"
-              placeholder="Briefly describe your paper and what you changed to address this comment...">
+              placeholder="Briefly describe your paper and what you changed...">
             </textarea>
           </div>
           <div class="form-group">
@@ -288,6 +273,42 @@
 
       </div>
 
+      <!-- Prompt refiner -->
+      <div class="refiner-card">
+        <div class="refiner-title">💡 Not sure what to ask?</div>
+        <div class="refiner-sub">
+          Describe your research idea in plain words — we will
+          convert it into a proper prompt for you.
+        </div>
+        <textarea
+          id="roughIdea"
+          rows="3"
+          placeholder="e.g. I want feedback on my paper about detecting fake news using AI..."
+          spellcheck="false"
+        ></textarea>
+        <button class="refine-btn" id="refineBtn"
+                onclick="RESEARCH.refineIdea()">
+          Refine my idea ↗
+        </button>
+        <div id="refinedBox" class="refined-box hidden">
+          <div class="refined-label">Refined prompt</div>
+          <div class="refined-text" id="refinedText"></div>
+          <div class="refined-actions">
+            <button class="use-btn" onclick="RESEARCH.useRefined()">
+              Use this ↗
+            </button>
+            <button class="discard-btn"
+                    onclick="RESEARCH.discardRefined()">
+              Discard
+            </button>
+            <button class="clear-btn"
+                    onclick="RESEARCH.clearRefiner()">
+              Ask another ↺
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- Generate button -->
       <button class="research-btn" id="researchBtn"
               onclick="RESEARCH.run()">
@@ -296,10 +317,8 @@
 
     </div>
 
-
     <!-- ── Right panel: output ────────────────────────────── -->
     <div class="research-right">
-
       <div class="output-header">
         <div class="output-title" id="outputTitle">Output</div>
         <button class="copy-btn hidden" id="copyBtn"
@@ -307,27 +326,23 @@
           Copy all
         </button>
       </div>
-
       <div class="output-feed" id="outputFeed">
         <div class="output-empty">
           Choose a tool and fill in the details on the left,
           then press <strong>Get Feedback</strong>.
         </div>
       </div>
-
     </div>
 
   </div>
 
 </div>
 
-
 <!-- ── Scripts ───────────────────────────────────────────── -->
 <script src="config.js"></script>
 <script src="api.js"></script>
 <script src="modules/research.js"></script>
 <script>
-
 document.addEventListener("DOMContentLoaded", () => {
   const key      = localStorage.getItem("genai_api_key");
   const provider = localStorage.getItem("genai_provider");
@@ -340,7 +355,6 @@ document.addEventListener("DOMContentLoaded", () => {
     CONFIG.providers[provider]?.label || provider;
   RESEARCH.init();
 });
-
 </script>
 
 </body>

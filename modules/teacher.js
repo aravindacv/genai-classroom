@@ -12,6 +12,7 @@ const TEACHER = {
   // ── Init ──────────────────────────────────────────────────
   init() {
     this._showForm("lecture");
+    this._updateBtn("lecture");
   },
 
 
@@ -24,6 +25,22 @@ const TEACHER = {
     el.classList.add("selected");
     this._showForm(toolId);
     this._updateBtn(toolId);
+
+    const labels = {
+      lecture:    "I want to plan a lecture series for my students",
+      slides:     "I want to create a slide outline for my lecture",
+      assessment: "I want to build an assessment or quiz for my students",
+      blooms:     "I want to map my learning outcomes to Bloom's taxonomy",
+      discussion: "I want to create discussion questions for my class"
+    };
+
+    const roughIdea = document.getElementById("roughIdea");
+    roughIdea.value = labels[toolId] || "";
+    document.getElementById("refinedBox").classList.add("hidden");
+    document.getElementById("refinedText").textContent = "";
+    roughIdea.style.borderColor = "#f5a07a";
+    setTimeout(() => { roughIdea.style.borderColor = ""; }, 1500);
+    roughIdea.scrollIntoView({ behavior: "smooth", block: "center" });
   },
 
 
@@ -58,10 +75,10 @@ const TEACHER = {
   async run() {
     if (this.isRunning) return;
 
-    const btn         = document.getElementById("studioBtn");
-    this.isRunning    = true;
-    btn.disabled      = true;
-    btn.textContent   = "Generating...";
+    const btn       = document.getElementById("studioBtn");
+    this.isRunning  = true;
+    btn.disabled    = true;
+    btn.textContent = "Generating...";
 
     this._clearOutput();
     this._showTyping();
@@ -73,7 +90,7 @@ const TEACHER = {
 
       case "lecture": {
         const subject = document.getElementById("lec-subject").value.trim()
-          || "Cybersecurity Fundamentals";
+          || "General Subject";
         const weeks   = document.getElementById("lec-weeks").value;
         const level   = document.getElementById("lec-level").value;
         const goals   = document.getElementById("lec-goals").value.trim();
@@ -87,7 +104,7 @@ ${goals ? `Learning goals: ${goals}` : ""}`;
 
       case "slides": {
         const topic    = document.getElementById("slide-topic").value.trim()
-          || "Cybersecurity Topic";
+          || "General Topic";
         const duration = document.getElementById("slide-duration").value;
         const level    = document.getElementById("slide-level").value;
         const points   = document.getElementById("slide-points").value.trim();
@@ -102,7 +119,7 @@ ${points ? `Key points: ${points}` : ""}`;
 
       case "assessment": {
         const topic      = document.getElementById("assess-topic").value.trim()
-          || "Cybersecurity";
+          || "General Topic";
         const type       = document.getElementById("assess-type").value;
         const difficulty = document.getElementById("assess-difficulty").value;
         const count      = document.getElementById("assess-count").value;
@@ -116,18 +133,20 @@ Number of questions: ${count}`;
 
       case "blooms": {
         const topic    = document.getElementById("blooms-topic").value.trim()
-          || "Cybersecurity";
+          || "General Topic";
         const outcomes = document.getElementById("blooms-outcomes").value.trim();
         systemPrompt   = this._promptBlooms();
         userMessage    = `Map these learning outcomes to Bloom's taxonomy:
 Topic: ${topic}
-${outcomes ? `Current outcomes:\n${outcomes}` : "Generate appropriate outcomes for this topic."}`;
+${outcomes
+  ? `Current outcomes:\n${outcomes}`
+  : "Generate appropriate outcomes for this topic."}`;
         break;
       }
 
       case "discussion": {
         const topic  = document.getElementById("disc-topic").value.trim()
-          || "Cybersecurity Ethics";
+          || "General Topic";
         const style  = document.getElementById("disc-style").value;
         const count  = document.getElementById("disc-count").value;
         systemPrompt = this._promptDiscussion();
@@ -157,7 +176,7 @@ Topic: ${topic}`;
 
   // ── Render response ───────────────────────────────────────
   _renderResponse(text) {
-    const feed = document.getElementById("outputFeed");
+    const feed  = document.getElementById("outputFeed");
     feed.innerHTML = "";
     const block = document.createElement("div");
     block.className = "output-block";
@@ -216,103 +235,224 @@ Topic: ${topic}`;
   },
 
 
+  // ── Refine rough idea into proper prompt ──────────────────
+  async refineIdea() {
+    const rough   = document.getElementById("roughIdea").value.trim();
+    const btn     = document.getElementById("refineBtn");
+    const box     = document.getElementById("refinedBox");
+
+    if (!rough) {
+      btn.textContent = "Please type your idea first";
+      setTimeout(() => { btn.textContent = "Refine my idea ↗"; }, 2000);
+      return;
+    }
+
+    btn.disabled    = true;
+    btn.textContent = "Refining...";
+    box.classList.add("hidden");
+
+    const systemPrompt = `You are an expert prompt engineer helping
+university teachers write clear, effective prompts for an AI
+teaching assistant.
+
+Your task is to take a teacher's rough idea and convert it into a
+well-structured, specific prompt that will get the best possible
+response from the AI.
+
+RULES:
+1. Keep the teacher's original intent — do not change what they want
+2. Make it specific — add pedagogical details they forgot to mention
+3. Make it clear — remove ambiguity
+4. Keep it concise — max 3 sentences
+5. Output ONLY the refined prompt — no explanation, no preamble
+6. Write it as a direct instruction to the AI
+7. Do not use bullet points — write as one flowing prompt
+8. Work for ANY subject — not just cybersecurity`;
+
+    const userMessage = `Convert this rough teaching idea into a
+proper prompt: "${rough}"
+
+Context: This is for an AI teaching assistant that helps create
+lecture plans, assessments, slide outlines, and discussion questions
+for university courses across any subject.`;
+
+    const text = await API.call(
+      systemPrompt,
+      [{ role: "user", content: userMessage }]
+    );
+
+    document.getElementById("refinedText").textContent = text.trim();
+    box.classList.remove("hidden");
+    btn.disabled    = false;
+    btn.textContent = "Refine my idea ↗";
+  },
+
+
+  // ── Use refined prompt ────────────────────────────────────
+  useRefined() {
+    const refined = document.getElementById("refinedText").textContent;
+    if (!refined) return;
+
+    const activeForm = document.getElementById(`form-${this.selectedTool}`);
+    const firstInput = activeForm.querySelector("input, textarea");
+    if (firstInput) {
+      firstInput.value = refined;
+      firstInput.style.borderColor = "#f5a07a";
+      setTimeout(() => { firstInput.style.borderColor = ""; }, 1500);
+    }
+
+    document.getElementById("studioBtn").scrollIntoView({ behavior: "smooth" });
+    document.getElementById("refinedBox").classList.add("hidden");
+    document.getElementById("roughIdea").value = "";
+
+    const btn = document.getElementById("studioBtn");
+    btn.style.background = "#712B13";
+    setTimeout(() => { btn.style.background = ""; }, 1500);
+  },
+
+
+  // ── Discard refined prompt ────────────────────────────────
+  discardRefined() {
+    document.getElementById("refinedBox").classList.add("hidden");
+    document.getElementById("roughIdea").value = "";
+  },
+
+
+  // ── Clear everything for a fresh question ─────────────────
+  clearRefiner() {
+    document.getElementById("refinedBox").classList.add("hidden");
+    document.getElementById("roughIdea").value = "";
+
+    const activeForm = document.getElementById(`form-${this.selectedTool}`);
+    const firstInput = activeForm.querySelector("input, textarea");
+    if (firstInput) firstInput.value = "";
+
+    document.getElementById("outputFeed").innerHTML = `
+      <div class="output-empty">
+        Choose a tool and fill in the details on the left,
+        then press <strong>Generate</strong>.
+      </div>`;
+    document.getElementById("copyBtn").classList.add("hidden");
+    document.getElementById("outputTitle").textContent = "Output";
+    document.getElementById("roughIdea").focus();
+  },
+
+
   // ── System prompts ────────────────────────────────────────
 
- _promptGenerate(project) {
-    return `You are a senior software engineer and domain expert with
-15 years of industry experience. Your task is to generate complete,
-production-quality Python code for: ${project}.
+  _promptLecture() {
+    return `You are an experienced university professor with 20 years
+of teaching experience across multiple disciplines.
 
-STRICT REQUIREMENTS:
-1. Use proper Python project structure.
-2. Follow PEP8 coding standards throughout.
-3. Include proper logging using Python logging module.
-4. Add comprehensive docstrings to all classes and functions.
-5. Include requirements.txt with all dependencies.
-6. Add proper error handling with try/except blocks.
-7. Use type hints on all function signatures.
-8. Include a README section explaining how to run the project.
-9. Add inline comments explaining complex logic.
-10. Structure the response as:
-    - Project structure overview
-    - Each file as a separate code block
-    - How to run it
-    - requirements.txt
+Your task is to create a detailed, structured lecture series plan
+for the given subject and level.
 
-Write clean, readable, industry-standard Python that a junior
-developer could understand and extend.`;
+REQUIREMENTS:
+1. For each week provide:
+   - Week number and title
+   - Learning objectives using Bloom's taxonomy verbs
+   - Main topics to cover
+   - Suggested activities — lab, discussion, case study
+   - Recommended resources
+2. Ensure progressive difficulty — build on previous weeks.
+3. Include a mix of theory, practical work, and case studies.
+4. End with assessment recommendations for the full course.
+
+Be comprehensive, practical, and academically rigorous.
+Sound like a real professor who has taught this subject for years.`;
   },
 
 
-  _promptStepByStep(project) {
-    return `You are a patient Python tutor teaching a university
-student how to build: ${project} from scratch.
+  _promptSlides() {
+    return `You are an expert instructional designer and university
+lecturer creating professional slide deck outlines.
 
-STRICT REQUIREMENTS:
-1. Break the project into 6 to 8 clear steps.
-2. For each step:
-   - Start with "## Step N: Title"
-   - Explain what this step does and WHY in 2 to 3 sentences
-   - Provide the Python code for that step only
-   - Explain what the code does line by line
-3. Each step must build on the previous one.
-4. Use beginner-friendly language — no jargon without explanation.
-5. Include tips and common mistakes to avoid.
-6. After all steps provide a complete final code block.
-7. End with how to test and run the project.
+REQUIREMENTS:
+1. Structure the slide deck as:
+   - Title slide
+   - Learning objectives slide
+   - Agenda slide
+   - Content sections with 3 to 5 slides each
+   - Summary slide
+   - Discussion slide
+   - References slide
+2. For each slide provide:
+   - Slide title
+   - 3 to 5 bullet points of content
+   - Suggested visual
+3. Include at least one hands-on activity slide.
+4. Add presenter notes for key slides.
 
-Be encouraging, clear, and educational. Sound like a real
-human tutor who genuinely wants the student to succeed.`;
+Be detailed, practical, and engaging.`;
   },
 
 
-  _promptFixError() {
-    return `You are an expert Python debugger. A student has shared
-a Python error and needs your help fixing it.
+  _promptAssessment() {
+    return `You are a university assessment designer with expertise
+in creating rigorous, fair assessments across all disciplines.
 
-STRICT REQUIREMENTS:
-1. Identify exactly what caused the error in plain English.
-2. Explain WHY this error occurs — the root cause.
-3. Provide the corrected code in a clean code block.
-4. Highlight exactly what you changed and why.
-5. Add a prevention tip — how to avoid this in future.
-6. If the code has other issues beyond the error mention them.
-7. Be clear, encouraging, and educational.
+FOR MCQ:
+- Write clear unambiguous questions
+- Provide 4 options A to D with one correct answer
+- Include explanation of the correct answer
+- Vary difficulty across questions
 
-Structure your response:
-- What went wrong
-- Root cause explanation
-- Fixed code block
-- What changed
-- Prevention tip
+FOR CASE STUDY:
+- Provide a realistic scenario
+- Include background context
+- Ask 3 to 5 analytical questions
+- Include a model answer guide
 
-Sound like a real senior developer helping a junior colleague.`;
+FOR RUBRIC:
+- Create detailed grading criteria
+- Include performance levels
+- Map to learning outcomes
+
+FOR MIXED:
+- Combine MCQ, short answer, and one case study
+- Balance marks appropriately
+
+Be rigorous, fair, and educationally sound.`;
   },
 
 
-  _promptReview() {
-    return `You are a senior Python engineer conducting a thorough
-code review for a university student.
+  _promptBlooms() {
+    return `You are an educational taxonomy expert specializing in
+Bloom's Revised Taxonomy for higher education.
 
-Review the code across these dimensions:
-1. CODE QUALITY — structure, naming, readability, PEP8
-2. ERROR HANDLING — missing try/except, unhandled edge cases
-3. SECURITY ISSUES — vulnerabilities, insecure practices
-4. PERFORMANCE — inefficiencies, better alternatives
-5. BEST PRACTICES — logging, type hints, docstrings, modularity
+REQUIREMENTS:
+1. Map each learning outcome to one of the 6 Bloom's levels:
+   - Remember, Understand, Apply, Analyze, Evaluate, Create
+2. For each outcome:
+   - State the current outcome
+   - Identify its Bloom's level
+   - Explain why it maps there
+   - Suggest an improved version with stronger action verbs
+3. Provide a distribution summary across all levels.
+4. Recommend additional outcomes to fill any gaps.
+5. Suggest appropriate assessment methods per level.
 
-For each issue found:
-- Explain the problem clearly
-- Show the problematic code
-- Provide the improved version
+Be precise, educational, and constructive.`;
+  },
 
-End with:
-- Overall score out of 10
-- Top 3 priority fixes
-- What was done well
 
-Be constructive, specific, and educational. Sound like a real
-senior developer who wants to help the student improve.`;
+  _promptDiscussion() {
+    return `You are an expert facilitator and university lecturer
+skilled at designing discussion questions that promote critical
+thinking across all subject areas.
+
+FOR SOCRATIC: Questions that probe assumptions and challenge perspectives.
+FOR DEBATE: Clear propositions students can argue for or against.
+FOR REFLECTIVE: Connect theory to personal experience.
+FOR CASE-BASED: Brief scenario followed by analytical questions.
+
+FORMAT:
+- Number each question clearly
+- Add a brief facilitator note per question
+- Indicate estimated discussion time
+- Note follow-up probing questions
+
+Be intellectually stimulating and pedagogically sound.`;
   }
 
 };

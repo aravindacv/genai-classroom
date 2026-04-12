@@ -23,7 +23,6 @@
     </div>
   </nav>
 
-
   <!-- ── Page header ───────────────────────────────────────── -->
   <div class="page-header">
     <h1>Teacher <span>Studio</span></h1>
@@ -34,7 +33,6 @@
   </div>
 
   <div class="header-divider"></div>
-
 
   <!-- ── Two column layout ─────────────────────────────────── -->
   <div class="studio-layout">
@@ -52,9 +50,7 @@
             <span class="tool-icon">📅</span>
             <div class="tool-text">
               <div class="tool-title">Lecture Series Planner</div>
-              <div class="tool-desc">
-                Full weekly plan with objectives and topics
-              </div>
+              <div class="tool-desc">Full weekly plan with objectives and topics</div>
             </div>
           </div>
 
@@ -63,9 +59,7 @@
             <span class="tool-icon">🖼️</span>
             <div class="tool-text">
               <div class="tool-title">Slide Outline Generator</div>
-              <div class="tool-desc">
-                Structured slide deck outline for any topic
-              </div>
+              <div class="tool-desc">Structured slide deck outline for any topic</div>
             </div>
           </div>
 
@@ -74,9 +68,7 @@
             <span class="tool-icon">📝</span>
             <div class="tool-text">
               <div class="tool-title">Assessment Builder</div>
-              <div class="tool-desc">
-                MCQs, case studies, and rubrics
-              </div>
+              <div class="tool-desc">MCQs, case studies, and rubrics</div>
             </div>
           </div>
 
@@ -85,9 +77,7 @@
             <span class="tool-icon">🌸</span>
             <div class="tool-text">
               <div class="tool-title">Bloom's Taxonomy Mapper</div>
-              <div class="tool-desc">
-                Map content to learning outcome levels
-              </div>
+              <div class="tool-desc">Map content to learning outcome levels</div>
             </div>
           </div>
 
@@ -96,15 +86,12 @@
             <span class="tool-icon">💬</span>
             <div class="tool-text">
               <div class="tool-title">Discussion Questions</div>
-              <div class="tool-desc">
-                Socratic questions to drive classroom debate
-              </div>
+              <div class="tool-desc">Socratic questions to drive classroom debate</div>
             </div>
           </div>
 
         </div>
       </div>
-
 
       <!-- Dynamic input form -->
       <div class="studio-card" id="inputForm">
@@ -141,7 +128,7 @@
           <div class="form-group">
             <label>Learning goals (optional)</label>
             <textarea id="lec-goals" rows="3"
-              placeholder="e.g. Students should understand network security fundamentals, threat detection, and incident response...">
+              placeholder="e.g. Students should understand network security fundamentals...">
             </textarea>
           </div>
         </div>
@@ -176,7 +163,7 @@
           <div class="form-group">
             <label>Key points to cover (optional)</label>
             <textarea id="slide-points" rows="3"
-              placeholder="e.g. Definition, history, key principles, real-world examples, case study...">
+              placeholder="e.g. Definition, history, key principles, real-world examples...">
             </textarea>
           </div>
         </div>
@@ -230,7 +217,7 @@
           <div class="form-group">
             <label>Paste your current learning outcomes</label>
             <textarea id="blooms-outcomes" rows="5"
-              placeholder="e.g.&#10;1. Students will understand firewall types&#10;2. Students will configure basic rules&#10;3. Students will analyze traffic logs...">
+              placeholder="e.g.&#10;1. Students will understand firewall types&#10;2. Students will configure basic rules...">
             </textarea>
           </div>
         </div>
@@ -266,6 +253,41 @@
 
       </div>
 
+      <!-- Prompt refiner -->
+      <div class="refiner-card">
+        <div class="refiner-title">💡 Not sure what to ask?</div>
+        <div class="refiner-sub">
+          Describe your teaching idea in plain words — we will
+          convert it into a proper prompt for you.
+        </div>
+        <textarea
+          id="roughIdea"
+          rows="3"
+          placeholder="e.g. I want to teach students about why passwords get hacked so easily..."
+          spellcheck="false"
+        ></textarea>
+        <button class="refine-btn" id="refineBtn"
+                onclick="TEACHER.refineIdea()">
+          Refine my idea ↗
+        </button>
+        <div id="refinedBox" class="refined-box hidden">
+          <div class="refined-label">Refined prompt</div>
+          <div class="refined-text" id="refinedText"></div>
+          <div class="refined-actions">
+            <button class="use-btn" onclick="TEACHER.useRefined()">
+              Use this ↗
+            </button>
+            <button class="discard-btn"
+                    onclick="TEACHER.discardRefined()">
+              Discard
+            </button>
+            <button class="clear-btn"
+                    onclick="TEACHER.clearRefiner()">
+              Ask another ↺
+            </button>
+          </div>
+        </div>
+      </div>
 
       <!-- Generate button -->
       <button class="studio-btn" id="studioBtn"
@@ -275,10 +297,8 @@
 
     </div>
 
-
     <!-- ── Right panel: output ────────────────────────────── -->
     <div class="studio-right">
-
       <div class="output-header">
         <div class="output-title" id="outputTitle">Output</div>
         <button class="copy-btn hidden" id="copyBtn"
@@ -286,43 +306,31 @@
           Copy all
         </button>
       </div>
-
       <div class="output-feed" id="outputFeed">
         <div class="output-empty">
           Choose a tool and fill in the details on the left,
           then press <strong>Generate</strong>.
         </div>
       </div>
-
     </div>
 
   </div>
 
 </div>
 
-
 <!-- ── Scripts ───────────────────────────────────────────── -->
 <script src="config.js"></script>
 <script src="api.js"></script>
 <script src="modules/teacher.js"></script>
 <script>
-
 document.addEventListener("DOMContentLoaded", () => {
   const key      = localStorage.getItem("genai_api_key");
   const provider = localStorage.getItem("genai_provider");
-
-  console.log("teacher.html reading — provider:", provider);
-  console.log("teacher.html reading — key prefix:", key?.substring(0,10));
-
   if (!key || !provider) {
     window.location.href = "/";
     return;
   }
-
   API.setKey(key, provider);
-
-  console.log("API.activeProvider after setKey:", API.activeProvider);
-
   document.getElementById("navProvider").textContent =
     CONFIG.providers[provider]?.label || provider;
   TEACHER.init();

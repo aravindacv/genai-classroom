@@ -23,25 +23,22 @@
     </div>
   </nav>
 
-
   <!-- ── Page header ───────────────────────────────────────── -->
   <div class="page-header">
     <h1>Debate <span>Arena</span></h1>
     <p class="page-tagline">
-      Watch four AI experts debate real cybersecurity topics,
+      Watch four AI experts debate real topics,
       then challenge the panel with your own questions.
     </p>
   </div>
 
   <div class="header-divider"></div>
 
-
   <!-- ── Agent cards ───────────────────────────────────────── -->
   <section class="agents-section">
     <div class="section-label">The Panel</div>
     <div id="agentCards"></div>
   </section>
-
 
   <!-- ── Topic selector ────────────────────────────────────── -->
   <section class="topic-section">
@@ -51,9 +48,19 @@
       </select>
       <button id="startBtn">Start Debate ↗</button>
     </div>
+
+    <!-- Custom topic input -->
+    <div id="customTopicWrap" class="custom-topic-wrap hidden">
+      <input
+        type="text"
+        id="customTopicInput"
+        placeholder="Type your own debate topic e.g. Should social media be regulated by governments?"
+        autocomplete="off"
+      />
+    </div>
+
     <div id="topicBanner" class="hidden"></div>
   </section>
-
 
   <!-- ── Debate feed ────────────────────────────────────────── -->
   <section class="feed-section">
@@ -65,10 +72,47 @@
     </div>
   </section>
 
-
   <!-- ── Student Q&A ───────────────────────────────────────── -->
   <section id="qaSection" class="hidden">
-    <div class="qa-label">Ask the Panel</div>
+
+    <!-- Prompt refiner for questions -->
+    <div class="refiner-card">
+      <div class="refiner-title">💡 Not sure how to ask your question?</div>
+      <div class="refiner-sub">
+        Type your rough question in plain words — we will convert it
+        into a sharp, well-structured question for the panel.
+      </div>
+      <textarea
+        id="roughQuestion"
+        rows="2"
+        placeholder="e.g. I want to ask about whether AI can replace human decision making..."
+        spellcheck="false"
+      ></textarea>
+      <button class="refine-btn" id="refineQBtn"
+              onclick="DEBATE_APP.refineQuestion()">
+        Refine my question ↗
+      </button>
+      <div id="refinedQBox" class="refined-box hidden">
+        <div class="refined-label">Refined question</div>
+        <div class="refined-text" id="refinedQText"></div>
+        <div class="refined-actions">
+          <button class="use-btn" onclick="DEBATE_APP.useRefinedQuestion()">
+            Ask this ↗
+          </button>
+          <button class="discard-btn" onclick="DEBATE_APP.discardRefinedQuestion()">
+            Discard
+          </button>
+          <button class="clear-btn" onclick="DEBATE_APP.clearQuestionRefiner()">
+            Ask another ↺
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Direct question input -->
+    <div class="qa-label" style="margin-top:1rem;">
+      Or type your question directly
+    </div>
     <div class="qa-controls">
       <input
         type="text"
@@ -78,14 +122,13 @@
       />
       <button id="askBtn">Ask ↗</button>
     </div>
-  </section>
 
+  </section>
 
   <!-- ── Status bar ────────────────────────────────────────── -->
   <div id="statusBar">Loading...</div>
 
 </div>
-
 
 <!-- ── Scripts ───────────────────────────────────────────── -->
 <script src="config.js"></script>
@@ -93,10 +136,6 @@
 <script src="modules/agents.js"></script>
 <script src="modules/debate.js"></script>
 <script>
-
-// ============================================================
-//  debate page controller
-// ============================================================
 
 const DEBATE_APP = {
 
@@ -106,21 +145,15 @@ const DEBATE_APP = {
 
   // ── Boot ──────────────────────────────────────────────────
   init() {
-    // restore session key from landing page
     const key      = localStorage.getItem("genai_api_key");
     const provider = localStorage.getItem("genai_provider");
-
     if (!key || !provider) {
       window.location.href = "/";
       return;
     }
-
     API.setKey(key, provider);
-
-    // show provider in nav
     document.getElementById("navProvider").textContent =
-      `${CONFIG.providers[provider]?.label || provider}`;
-
+      CONFIG.providers[provider]?.label || provider;
     this._renderAgentCards();
     this._renderTopics();
     this._bindEvents();
@@ -160,6 +193,11 @@ const DEBATE_APP = {
       opt.textContent = topic.label;
       select.appendChild(opt);
     });
+    // add custom option at the end
+    const custom = document.createElement("option");
+    custom.value       = "custom";
+    custom.textContent = "✏️ Custom topic — type your own";
+    select.appendChild(custom);
   },
 
 
@@ -167,29 +205,75 @@ const DEBATE_APP = {
   _bindEvents() {
     document.getElementById("startBtn")
       .addEventListener("click", () => this.startDebate());
+
     document.getElementById("askBtn")
       .addEventListener("click", () => this.askQuestion());
+
     document.getElementById("studentQ")
       .addEventListener("keydown", e => {
         if (e.key === "Enter") this.askQuestion();
       });
+
+    document.getElementById("roughQuestion")
+      .addEventListener("keydown", e => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          this.refineQuestion();
+        }
+      });
+
+    // show/hide custom topic input
+    document.getElementById("topicSelect")
+      .addEventListener("change", e => {
+        const wrap = document.getElementById("customTopicWrap");
+        if (e.target.value === "custom") {
+          wrap.classList.remove("hidden");
+          document.getElementById("customTopicInput").focus();
+        } else {
+          wrap.classList.add("hidden");
+        }
+      });
+  },
+
+
+  // ── Get active topic object ───────────────────────────────
+  _getActiveTopic() {
+    const val = document.getElementById("topicSelect").value;
+    if (!val) return null;
+
+    if (val === "custom") {
+      const customText = document.getElementById("customTopicInput")
+        .value.trim();
+      if (!customText) return null;
+      return {
+        id:       "custom",
+        label:    customText,
+        question: customText
+      };
+    }
+
+    return CONFIG.topics.find(t => t.id === val) || null;
   },
 
 
   // ── Start debate ──────────────────────────────────────────
   async startDebate() {
-    const topicId = document.getElementById("topicSelect").value;
-    if (!topicId) {
-      this._setStatus("Please select a topic first.");
+    const topic = this._getActiveTopic();
+    if (!topic) {
+      this._setStatus(
+        document.getElementById("topicSelect").value === "custom"
+          ? "Please type your custom topic first."
+          : "Please select a topic first."
+      );
       return;
     }
 
     this._clearFeed();
     this._setDebateActive(true);
-    this._highlightTopic(topicId);
+    this._highlightTopic(topic);
 
     await DEBATE.start(
-      topicId,
+      topic,
       (agent, text, msgId, isTyping) =>
         this._onMessage(agent, text, msgId, isTyping),
       (status) => this._setStatus(status),
@@ -221,7 +305,6 @@ const DEBATE_APP = {
 
     this._appendStudentMessage(question);
     input.value = "";
-
     document.getElementById("askBtn").disabled = true;
 
     await DEBATE.ask(
@@ -232,6 +315,92 @@ const DEBATE_APP = {
     );
 
     document.getElementById("askBtn").disabled = false;
+  },
+
+
+  // ── Refine rough question ─────────────────────────────────
+  async refineQuestion() {
+    const rough = document.getElementById("roughQuestion").value.trim();
+    const btn   = document.getElementById("refineQBtn");
+    const box   = document.getElementById("refinedQBox");
+
+    if (!rough) {
+      btn.textContent = "Please type your question first";
+      setTimeout(() => { btn.textContent = "Refine my question ↗"; }, 2000);
+      return;
+    }
+
+    btn.disabled    = true;
+    btn.textContent = "Refining...";
+    box.classList.add("hidden");
+
+    const systemPrompt = `You are an expert at helping students ask
+sharp, well-structured questions during academic panel debates.
+
+Your task is to take a student's rough question and convert it into
+a clear, specific, intellectually engaging question for a panel of
+experts.
+
+RULES:
+1. Keep the student's original intent — do not change what they want
+2. Make it specific and intellectually sharp
+3. Remove ambiguity — make it one clear question
+4. Keep it concise — one sentence maximum
+5. Output ONLY the refined question — no explanation, no preamble
+6. Make it sound like a confident, curious student asking a panel
+7. Works for any topic — not just cybersecurity or AI`;
+
+    const userMessage = `Convert this rough question into a sharp
+panel question: "${rough}"
+
+Context: This is for a live academic debate panel with four expert
+personas — a researcher, ethicist, industry expert, and policy
+regulator. The question will be directed to the most relevant expert.`;
+
+    const text = await API.call(
+      systemPrompt,
+      [{ role: "user", content: userMessage }]
+    );
+
+    document.getElementById("refinedQText").textContent = text.trim();
+    box.classList.remove("hidden");
+    btn.disabled    = false;
+    btn.textContent = "Refine my question ↗";
+  },
+
+
+  // ── Use refined question ──────────────────────────────────
+  useRefinedQuestion() {
+    const refined = document.getElementById("refinedQText").textContent;
+    if (!refined) return;
+
+    document.getElementById("studentQ").value = refined;
+    document.getElementById("refinedQBox").classList.add("hidden");
+    document.getElementById("roughQuestion").value = "";
+
+    // flash the question input
+    const input = document.getElementById("studentQ");
+    input.style.borderColor = "#a89ef5";
+    setTimeout(() => { input.style.borderColor = ""; }, 1500);
+
+    // scroll to ask button
+    document.getElementById("askBtn").scrollIntoView({ behavior: "smooth" });
+  },
+
+
+  // ── Discard refined question ──────────────────────────────
+  discardRefinedQuestion() {
+    document.getElementById("refinedQBox").classList.add("hidden");
+    document.getElementById("roughQuestion").value = "";
+  },
+
+
+  // ── Clear question refiner ────────────────────────────────
+  clearQuestionRefiner() {
+    document.getElementById("refinedQBox").classList.add("hidden");
+    document.getElementById("roughQuestion").value = "";
+    document.getElementById("studentQ").value = "";
+    document.getElementById("roughQuestion").focus();
   },
 
 
@@ -254,7 +423,9 @@ const DEBATE_APP = {
             <span class="message-name"
                   style="color:${agent.color};">${agent.name}</span>
             <span class="message-role">${agent.role}</span>
-            <span class="message-institution">${agent.institution || ""}</span>
+            <span class="message-institution">
+              ${agent.institution || ""}
+            </span>
           </div>
           ${isModerator
             ? `<span class="summary-badge">Summary</span>` : ""}
@@ -283,7 +454,8 @@ const DEBATE_APP = {
       <div class="message message--student">
         <div class="message-header">
           <div class="message-avatar"
-               style="background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.6);">
+               style="background:rgba(255,255,255,0.08);
+                      color:rgba(255,255,255,0.6);">
             🎓
           </div>
           <div class="message-meta">
@@ -346,9 +518,7 @@ const DEBATE_APP = {
 
 
   // ── Highlight topic ───────────────────────────────────────
-  _highlightTopic(topicId) {
-    const topic = CONFIG.topics.find(t => t.id === topicId);
-    if (!topic) return;
+  _highlightTopic(topic) {
     const bar       = document.getElementById("topicBanner");
     bar.textContent = `Debating: ${topic.question}`;
     bar.classList.remove("hidden");
