@@ -27,8 +27,8 @@
   <div class="page-header">
     <h1>Research <span>Supervisor</span></h1>
     <p class="page-tagline">
-      Get PhD-level guidance on your research paper, methodology,
-      literature gaps, writing quality, and reviewer responses.
+      From problem to paper — literature search, implementation,
+      error correction, results analysis, and full paper generation.
     </p>
   </div>
 
@@ -37,13 +37,24 @@
   <!-- ── Two column layout ─────────────────────────────────── -->
   <div class="research-layout">
 
-    <!-- ── Left panel ────────────────────────────────────────── -->
+    <!-- ── Left panel ──────────────────────────────────────── -->
     <div class="research-left">
 
       <!-- Tool selector -->
       <div class="research-card">
         <div class="research-card-title">🛠️ Choose a tool</div>
         <div class="tool-list">
+
+          <div class="tool-item" data-tool="implement"
+               onclick="RESEARCH.selectTool('implement', this)">
+            <span class="tool-icon">⚗️</span>
+            <div class="tool-text">
+              <div class="tool-title">Research Implementation</div>
+              <div class="tool-desc">
+                Problem → Literature → Code → Paper
+              </div>
+            </div>
+          </div>
 
           <div class="tool-item selected" data-tool="structure"
                onclick="RESEARCH.selectTool('structure', this)">
@@ -104,6 +115,157 @@
 
       <!-- Dynamic input form -->
       <div class="research-card" id="inputForm">
+
+        <!-- ── Research Implementation ── -->
+        <div id="form-implement" class="hidden">
+
+          <!-- Sub-step navigation -->
+          <div class="substep-nav">
+            <div class="substep active" id="nav-s1"
+                 onclick="RESEARCH.goStep(1)">
+              <span class="substep-num">1</span>
+              <span class="substep-label">Problem</span>
+            </div>
+            <div class="substep-line"></div>
+            <div class="substep" id="nav-s2"
+                 onclick="RESEARCH.goStep(2)">
+              <span class="substep-num">2</span>
+              <span class="substep-label">Literature</span>
+            </div>
+            <div class="substep-line"></div>
+            <div class="substep" id="nav-s3"
+                 onclick="RESEARCH.goStep(3)">
+              <span class="substep-num">3</span>
+              <span class="substep-label">Code</span>
+            </div>
+            <div class="substep-line"></div>
+            <div class="substep" id="nav-s4"
+                 onclick="RESEARCH.goStep(4)">
+              <span class="substep-num">4</span>
+              <span class="substep-label">Results</span>
+            </div>
+            <div class="substep-line"></div>
+            <div class="substep" id="nav-s5"
+                 onclick="RESEARCH.goStep(5)">
+              <span class="substep-num">5</span>
+              <span class="substep-label">Paper</span>
+            </div>
+          </div>
+
+          <!-- Step 1: Define problem -->
+          <div id="step-1" class="step-content">
+            <div class="research-card-title">⚗️ Step 1 — Define your research problem</div>
+            <div class="form-group">
+              <label>Research domain</label>
+              <input type="text" id="impl-domain"
+                placeholder="e.g. Machine Learning, NLP, Computer Vision, IoT..." />
+            </div>
+            <div class="form-group">
+              <label>Describe your problem in plain words</label>
+              <textarea id="impl-problem" rows="4"
+                placeholder="e.g. I want to detect fake news articles using transformer models and compare it with traditional ML approaches...">
+              </textarea>
+            </div>
+            <div class="form-group">
+              <label>Programming language</label>
+              <select id="impl-lang">
+                <option value="python">Python</option>
+                <option value="r">R</option>
+                <option value="julia">Julia</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Target venue (for paper later)</label>
+              <select id="impl-venue">
+                <option value="ieee">IEEE Transaction / Conference</option>
+                <option value="acm">ACM Conference / Journal</option>
+                <option value="springer">Springer Journal</option>
+                <option value="elsevier">Elsevier Journal</option>
+                <option value="frontiers">Frontiers Journal</option>
+                <option value="arxiv">arXiv Preprint</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Step 2: Literature search -->
+          <div id="step-2" class="step-content hidden">
+            <div class="research-card-title">📚 Step 2 — Literature search</div>
+            <div class="form-group">
+              <label>Your refined research question</label>
+              <textarea id="impl-question" rows="3"
+                placeholder="Your refined research question will appear here after Step 1...">
+              </textarea>
+            </div>
+            <div class="form-group">
+              <label>Any papers you already know (optional)</label>
+              <textarea id="impl-known-papers" rows="3"
+                placeholder="e.g. BERT paper 2018, GPT-3 Brown et al. 2020...">
+              </textarea>
+            </div>
+          </div>
+
+          <!-- Step 3: Implementation -->
+          <div id="step-3" class="step-content hidden">
+            <div class="research-card-title">💻 Step 3 — Implementation</div>
+            <div class="form-group">
+              <label>Additional requirements (optional)</label>
+              <textarea id="impl-requirements" rows="3"
+                placeholder="e.g. Use PyTorch, include cross-validation, add logging, REST API endpoint...">
+              </textarea>
+            </div>
+            <div class="form-group">
+              <label>Paste error to fix (optional)</label>
+              <textarea id="impl-error" rows="4"
+                placeholder="If you have an error from your code, paste it here and we will fix it...">
+              </textarea>
+            </div>
+          </div>
+
+          <!-- Step 4: Results analysis -->
+          <div id="step-4" class="step-content hidden">
+            <div class="research-card-title">📊 Step 4 — Results analysis</div>
+            <div class="form-group">
+              <label>Paste your experiment results</label>
+              <textarea id="impl-results" rows="6"
+                placeholder="e.g. Accuracy: 94.2%, F1: 0.91, AUC: 0.97&#10;Baseline SVM: 78.3%&#10;Training time: 45 mins on GPU&#10;Dataset: 50,000 samples...">
+              </textarea>
+            </div>
+            <div class="form-group">
+              <label>What went well / what did not (optional)</label>
+              <textarea id="impl-observations" rows="3"
+                placeholder="e.g. Model performs well on short texts but struggles with sarcasm...">
+              </textarea>
+            </div>
+          </div>
+
+          <!-- Step 5: Generate paper -->
+          <div id="step-5" class="step-content hidden">
+            <div class="research-card-title">📄 Step 5 — Generate full paper</div>
+            <div class="form-group">
+              <label>Paper title (optional — AI will suggest if empty)</label>
+              <input type="text" id="impl-title"
+                placeholder="e.g. A Transformer-Based Approach for Fake News Detection..." />
+            </div>
+            <div class="form-group">
+              <label>Section to generate</label>
+              <select id="impl-section">
+                <option value="full">Full paper (all sections)</option>
+                <option value="abstract">Abstract only</option>
+                <option value="introduction">Introduction only</option>
+                <option value="related">Related Work only</option>
+                <option value="methodology">Methodology only</option>
+                <option value="results">Results & Discussion only</option>
+                <option value="conclusion">Conclusion only</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Author names (optional)</label>
+              <input type="text" id="impl-authors"
+                placeholder="e.g. Dr. Aravinda C V, MECIT, Muscat, Oman" />
+            </div>
+          </div>
+
+        </div>
 
         <!-- Paper structure -->
         <div id="form-structure">
@@ -283,7 +445,7 @@
         <textarea
           id="roughIdea"
           rows="3"
-          placeholder="e.g. I want feedback on my paper about detecting fake news using AI..."
+          placeholder="e.g. I want to detect fake news using AI and write a paper about it..."
           spellcheck="false"
         ></textarea>
         <button class="refine-btn" id="refineBtn"
@@ -317,7 +479,7 @@
 
     </div>
 
-    <!-- ── Right panel: output ────────────────────────────── -->
+    <!-- ── Right panel: output ──────────────────────────────── -->
     <div class="research-right">
       <div class="output-header">
         <div class="output-title" id="outputTitle">Output</div>
@@ -329,7 +491,7 @@
       <div class="output-feed" id="outputFeed">
         <div class="output-empty">
           Choose a tool and fill in the details on the left,
-          then press <strong>Get Feedback</strong>.
+          then press the button to begin.
         </div>
       </div>
     </div>
