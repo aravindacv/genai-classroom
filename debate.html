@@ -85,7 +85,7 @@
       <textarea
         id="roughQuestion"
         rows="2"
-        placeholder="e.g. I want to ask about whether AI can replace human decision making..."
+        placeholder="e.g. Tell me about SHAP and LIME in Explainable AI..."
         spellcheck="false"
       ></textarea>
       <button class="refine-btn" id="refineQBtn"
@@ -96,13 +96,16 @@
         <div class="refined-label">Refined question</div>
         <div class="refined-text" id="refinedQText"></div>
         <div class="refined-actions">
-          <button class="use-btn" onclick="DEBATE_APP.useRefinedQuestion()">
+          <button class="use-btn"
+                  onclick="DEBATE_APP.useRefinedQuestion()">
             Ask this ↗
           </button>
-          <button class="discard-btn" onclick="DEBATE_APP.discardRefinedQuestion()">
+          <button class="discard-btn"
+                  onclick="DEBATE_APP.discardRefinedQuestion()">
             Discard
           </button>
-          <button class="clear-btn" onclick="DEBATE_APP.clearQuestionRefiner()">
+          <button class="clear-btn"
+                  onclick="DEBATE_APP.clearQuestionRefiner()">
             Ask another ↺
           </button>
         </div>
@@ -193,10 +196,9 @@ const DEBATE_APP = {
       opt.textContent = topic.label;
       select.appendChild(opt);
     });
-    // add custom option at the end
-    const custom = document.createElement("option");
-    custom.value       = "custom";
-    custom.textContent = "✏️ Custom topic — type your own";
+    const custom        = document.createElement("option");
+    custom.value        = "custom";
+    custom.textContent  = "✏️ Custom topic — type your own";
     select.appendChild(custom);
   },
 
@@ -222,7 +224,6 @@ const DEBATE_APP = {
         }
       });
 
-    // show/hide custom topic input
     document.getElementById("topicSelect")
       .addEventListener("change", e => {
         const wrap = document.getElementById("customTopicWrap");
@@ -245,11 +246,7 @@ const DEBATE_APP = {
       const customText = document.getElementById("customTopicInput")
         .value.trim();
       if (!customText) return null;
-      return {
-        id:       "custom",
-        label:    customText,
-        question: customText
-      };
+      return { id: "custom", label: customText, question: customText };
     }
 
     return CONFIG.topics.find(t => t.id === val) || null;
@@ -337,25 +334,32 @@ const DEBATE_APP = {
     const systemPrompt = `You are an expert at helping students ask
 sharp, well-structured questions during academic panel debates.
 
-Your task is to take a student's rough question and convert it into
-a clear, specific, intellectually engaging question for a panel of
-experts.
+Your task is to take a student's rough question or topic and convert
+it into a clear, specific, intellectually engaging question for a
+panel of experts.
 
 RULES:
 1. Keep the student's original intent — do not change what they want
 2. Make it specific and intellectually sharp
 3. Remove ambiguity — make it one clear question
-4. Keep it concise — one sentence maximum
+4. Keep it concise — one or two sentences maximum
 5. Output ONLY the refined question — no explanation, no preamble
 6. Make it sound like a confident, curious student asking a panel
-7. Works for any topic — not just cybersecurity or AI`;
+7. Works for ANY topic — science, technology, medicine, law,
+   education, AI, machine learning, XAI, SHAP, LIME, statistics,
+   environment, history, or anything else
+8. If the student mentions a concept or tool like SHAP, LIME, XAI,
+   neural networks, transformers etc — ask about that concept
+   directly and clearly
+9. Never assume the topic is about cybersecurity`;
 
-    const userMessage = `Convert this rough question into a sharp
-panel question: "${rough}"
+    const userMessage = `Convert this into a sharp panel question:
+"${rough}"
 
 Context: This is for a live academic debate panel with four expert
 personas — a researcher, ethicist, industry expert, and policy
-regulator. The question will be directed to the most relevant expert.`;
+regulator. The panel responds to ANY topic from their own
+professional lens. Never assume cybersecurity context.`;
 
     const text = await API.call(
       systemPrompt,
@@ -378,12 +382,9 @@ regulator. The question will be directed to the most relevant expert.`;
     document.getElementById("refinedQBox").classList.add("hidden");
     document.getElementById("roughQuestion").value = "";
 
-    // flash the question input
     const input = document.getElementById("studentQ");
     input.style.borderColor = "#a89ef5";
     setTimeout(() => { input.style.borderColor = ""; }, 1500);
-
-    // scroll to ask button
     document.getElementById("askBtn").scrollIntoView({ behavior: "smooth" });
   },
 
@@ -455,8 +456,7 @@ regulator. The question will be directed to the most relevant expert.`;
         <div class="message-header">
           <div class="message-avatar"
                style="background:rgba(255,255,255,0.08);
-                      color:rgba(255,255,255,0.6);">
-            🎓
+                      color:rgba(255,255,255,0.6);">🎓
           </div>
           <div class="message-meta">
             <span class="message-name"
