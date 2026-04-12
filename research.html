@@ -205,20 +205,50 @@
           </div>
 
           <!-- Step 3: Implementation -->
+          <!-- Step 3: Implementation -->
           <div id="step-3" class="step-content hidden">
             <div class="research-card-title">💻 Step 3 — Implementation</div>
-            <div class="form-group">
-              <label>Additional requirements (optional)</label>
-              <textarea id="impl-requirements" rows="3"
-                placeholder="e.g. Use PyTorch, include cross-validation, add logging, REST API endpoint...">
-              </textarea>
+
+            <!-- Mode toggle -->
+            <div class="impl-mode-toggle">
+              <button class="impl-mode-btn active" id="modeGenBtn"
+                      onclick="RESEARCH.setImplMode('generate', this)">
+                🏗️ Generate code
+              </button>
+              <button class="impl-mode-btn" id="modeFixBtn"
+                      onclick="RESEARCH.setImplMode('fix', this)">
+                🔧 Fix my error
+              </button>
             </div>
-            <div class="form-group">
-              <label>Paste error to fix (optional)</label>
-              <textarea id="impl-error" rows="4"
-                placeholder="If you have an error from your code, paste it here and we will fix it...">
-              </textarea>
+
+            <!-- Generate mode -->
+            <div id="impl-generate-mode">
+              <div class="form-group">
+                <label>Language</label>
+                <select id="impl-lang-s3">
+                  <option value="python">Python</option>
+                  <option value="r">R</option>
+                  <option value="julia">Julia</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Additional requirements (optional)</label>
+                <textarea id="impl-requirements" rows="3"
+                  placeholder="e.g. Use PyTorch, include cross-validation, add logging, REST API endpoint...">
+                </textarea>
+              </div>
             </div>
+
+            <!-- Fix error mode -->
+            <div id="impl-fix-mode" class="hidden">
+              <div class="form-group">
+                <label>Paste your error + code</label>
+                <textarea id="impl-error" rows="6"
+                  placeholder="Paste the full error traceback and the code that caused it...">
+                </textarea>
+              </div>
+            </div>
+
           </div>
 
           <!-- Step 4: Results analysis -->

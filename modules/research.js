@@ -439,10 +439,16 @@ ${knownPapers ? `Papers I already know:\n${knownPapers}` : ""}`;
   async _stepCode() {
     const requirements = document.getElementById("impl-requirements")
       .value.trim();
-    const error        = document.getElementById("impl-error").value.trim();
+    const error      = document.getElementById("impl-error")?.value.trim() || "";
+    const fixModeBtn = document.getElementById("modeFixBtn");
+    const isFixMode  = fixModeBtn?.classList.contains("active");
 
-    // if error is pasted — fix mode
-    if (error) {
+    // sync language from step 3 selector
+    const langS3 = document.getElementById("impl-lang-s3")?.value;
+    if (langS3) this.memory.language = langS3;
+
+    // fix mode or generate mode
+    if (isFixMode && error)  {
       this._showTyping("Fixing your error...");
 
       const systemPrompt = `You are an expert ${this.memory.language}
