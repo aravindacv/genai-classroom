@@ -566,3 +566,21 @@
   color: #ffffff;
   border-color: rgba(255,255,255,0.30);
 }
+
+.clear-btn {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 5px 14px;
+  border-radius: 999px;
+  border: 0.5px solid rgba(110,207,173,0.25);
+  background: transparent;
+  color: #6ecfad;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  margin-left: auto;
+}
+
+.clear-btn:hover {
+  background: rgba(110,207,173,0.10);
+  border-color: rgba(110,207,173,0.45);
+}
