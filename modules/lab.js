@@ -90,7 +90,89 @@ const LAB = {
     };
     return labels[this.selectedProject] || "Cybersecurity Tool";
   },
+// ── Refine rough idea into proper prompt ──────────────────
+  async refineIdea() {
+    const rough   = document.getElementById("roughIdea").value.trim();
+    const btn     = document.getElementById("refineBtn");
+    const box     = document.getElementById("refinedBox");
+    const refined = document.getElementById("refinedText");
 
+    if (!rough) {
+      btn.textContent = "Please type your idea first";
+      setTimeout(() => { btn.textContent = "Refine my idea ↗"; }, 2000);
+      return;
+    }
+
+    btn.disabled    = true;
+    btn.textContent = "Refining...";
+    box.classList.add("hidden");
+
+    const systemPrompt = `You are an expert prompt engineer helping university
+students write clear, effective prompts for an AI coding assistant.
+
+Your task is to take a student's rough idea and convert it into a
+well-structured, specific prompt that will get the best possible
+response from an AI code generator.
+
+RULES:
+1. Keep the student's original intent — do not change what they want
+2. Make it specific — add technical details they forgot to mention
+3. Make it clear — remove ambiguity
+4. Keep it concise — max 3 sentences
+5. Output ONLY the refined prompt — no explanation, no preamble
+6. Write it as if the student is asking the AI directly
+7. Do not use bullet points — write as one flowing prompt`;
+
+    const userMessage = `Convert this rough idea into a proper prompt:
+"${rough}"
+
+Context: This is for a Python code generation tool focused on
+building real software projects.`;
+
+    const text = await API.call(
+      systemPrompt,
+      [{ role: "user", content: userMessage }]
+    );
+
+    refined.textContent = text.trim();
+    box.classList.remove("hidden");
+    btn.disabled    = false;
+    btn.textContent = "Refine my idea ↗";
+  },
+
+
+  // ── Use refined prompt ────────────────────────────────────
+  useRefined() {
+    const refined = document.getElementById("refinedText").textContent;
+    if (!refined) return;
+
+    // put into the code input textarea
+    document.getElementById("codeInput").value = refined;
+
+    // also update custom project name if custom is selected
+    if (this.selectedProject === "custom") {
+      document.getElementById("customProjectName").value = refined;
+    }
+
+    // scroll to generate button
+    document.getElementById("labBtn").scrollIntoView({ behavior: "smooth" });
+
+    // hide the refined box
+    document.getElementById("refinedBox").classList.add("hidden");
+    document.getElementById("roughIdea").value = "";
+
+    // flash the input to show it was filled
+    const input = document.getElementById("codeInput");
+    input.style.borderColor = "#6ecfad";
+    setTimeout(() => { input.style.borderColor = ""; }, 1500);
+  },
+
+
+  // ── Discard refined prompt ────────────────────────────────
+  discardRefined() {
+    document.getElementById("refinedBox").classList.add("hidden");
+    document.getElementById("roughIdea").value = "";
+  },
 
   // ── Run ───────────────────────────────────────────────────
   async run() {

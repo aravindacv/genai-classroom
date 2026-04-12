@@ -164,10 +164,41 @@
 
 
       <!-- Generate button -->
+      <!-- Prompt refiner -->
+      <div class="refiner-card">
+        <div class="refiner-title">💡 Not sure what to ask?</div>
+        <div class="refiner-sub">
+          Describe your idea in plain words — we will convert it
+          into a proper prompt for you.
+        </div>
+        <textarea
+          id="roughIdea"
+          rows="3"
+          placeholder="e.g. I want to build something that detects if an email is fake or real..."
+          spellcheck="false"
+        ></textarea>
+        <button class="refine-btn" id="refineBtn"
+                onclick="LAB.refineIdea()">
+          Refine my idea ↗
+        </button>
+        <div id="refinedBox" class="refined-box hidden">
+          <div class="refined-label">Refined prompt</div>
+          <div class="refined-text" id="refinedText"></div>
+          <div class="refined-actions">
+            <button class="use-btn" onclick="LAB.useRefined()">
+              Use this ↗
+            </button>
+            <button class="discard-btn" onclick="LAB.discardRefined()">
+              Discard
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Generate button -->
       <button class="lab-btn" id="labBtn" onclick="LAB.run()">
         Generate Code ↗
       </button>
-
     </div>
 
 
