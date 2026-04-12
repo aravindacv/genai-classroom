@@ -27,9 +27,36 @@ const LAB = {
     const customInput = document.getElementById("customInput");
     if (projectId === "custom") {
       customInput.classList.remove("hidden");
-    } else {
-      customInput.classList.add("hidden");
+      document.getElementById("roughIdea").value = "";
+      document.getElementById("refinedBox").classList.add("hidden");
+      return;
     }
+
+    // hide custom input for non-custom projects
+    customInput.classList.add("hidden");
+
+    // auto fill the rough idea box with project name
+    const labels = {
+      fraud:    "I want to build a Fraud Detection System in Python",
+      ids:      "I want to build an Intrusion Detection System in Python",
+      malware:  "I want to build a Malware Classifier in Python",
+      anomaly:  "I want to build a Network Anomaly Detector in Python",
+      phishing: "I want to build a Phishing URL Detector in Python"
+    };
+
+    const roughIdea = document.getElementById("roughIdea");
+    roughIdea.value = labels[projectId] || "";
+
+    // clear any previous refined output
+    document.getElementById("refinedBox").classList.add("hidden");
+    document.getElementById("refinedText").textContent = "";
+
+    // flash the rough idea box to show it was filled
+    roughIdea.style.borderColor = "#6ecfad";
+    setTimeout(() => { roughIdea.style.borderColor = ""; }, 1500);
+
+    // scroll to refiner smoothly
+    roughIdea.scrollIntoView({ behavior: "smooth", block: "center" });
   },
 
 
