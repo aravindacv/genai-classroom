@@ -126,8 +126,9 @@ RULES:
     const userMessage = `Convert this rough idea into a proper prompt:
 "${rough}"
 
-Context: This is for a Python code generation tool focused on
-building real software projects.`;
+Context: This is for a Python code generation tool that helps
+students build any kind of software project — cybersecurity tools,
+web apps, data science, automation, games, APIs, or anything else.`;
 
     const text = await API.call(
       systemPrompt,
@@ -174,6 +175,20 @@ building real software projects.`;
     document.getElementById("roughIdea").value = "";
   },
 
+// ── Clear everything for a fresh question ─────────────────
+  clearRefiner() {
+    document.getElementById("refinedBox").classList.add("hidden");
+    document.getElementById("roughIdea").value = "";
+    document.getElementById("codeInput").value = "";
+    document.getElementById("roughIdea").focus();
+    document.getElementById("outputFeed").innerHTML = `
+      <div class="output-empty">
+        Choose a project and mode on the left,
+        then press <strong>Generate</strong>.
+      </div>`;
+    document.getElementById("copyBtn").classList.add("hidden");
+    document.getElementById("outputTitle").textContent = "Output";
+  },
   // ── Run ───────────────────────────────────────────────────
   async run() {
     if (this.isRunning) return;
