@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MedVision Reflex — Visual Diagnostic Training</title>
+<meta name="description" content="Train your eyes to diagnose dermoscopy images in under 10 seconds — powered by ARCMED AI, not flashcard labels."/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #020817;
+    --surface:  #0f172a;
+    --surface2: #0a0f1e;
+    --border:   #1e293b;
+    --text:     #f1f5f9;
+    --muted:    #64748b;
+    --dim:      #475569;
+    --teal:     #0e7490;
+    --teal-h:   #0c6a83;
+    --green:    #16a34a;
+    --amber:    #d97706;
+    --red:      #dc2626;
+    --radius:   10px;
+    --radius-lg:14px;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+  }
+
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  .container { max-width: 680px; margin: 0 auto; padding: 32px 20px; }
+
+  .btn {
+    border: none; border-radius: var(--radius); padding: 13px 20px;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    width: 100%; transition: background 0.15s; font-family: inherit;
+  }
+  .btn-primary { background: var(--teal); color: #fff; }
+  .btn-primary:hover:not(:disabled) { background: var(--teal-h); }
+  .btn-primary:disabled { opacity: 0.4; cursor: default; }
+  .btn-amber { background: var(--amber); color: #fff; }
+  .btn-amber:hover:not(:disabled) { background: #b45309; }
+  .btn-amber:disabled { opacity: 0.4; cursor: default; }
+  .btn-ghost {
+    background: transparent; color: var(--muted);
+    border: 1px solid var(--border); width: auto; padding: 7px 14px;
+  }
+  .btn-ghost:hover { color: var(--text); border-color: var(--dim); }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 18px 20px;
+  }
+
+  .mono { font-family: monospace; }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .grid3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+
+  .status-bar {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 999px; padding: 5px 14px; margin-bottom: 24px;
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 14px; text-align: center;
+  }
+  .stat-val { font-size: 26px; font-weight: 800; font-family: monospace; }
+  .stat-lbl { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .stat-sub { font-size: 10px; color: var(--dim); margin-top: 3px; }
+
+  /* Drill screen */
+  .drill-topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px; border-bottom: 1px solid var(--border);
+    background: var(--surface2); position: sticky; top: 0; z-index: 10;
+  }
+
+  .progress-track {
+    height: 3px; background: var(--border); border-radius: 3px; margin: 0 20px;
+  }
+  .progress-fill {
+    height: 100%; background: var(--teal); border-radius: 3px;
+    transition: width 0.3s ease;
+  }
+
+  .img-wrap {
+    position: relative; width: 100%; max-width: 340px;
+    margin: 24px auto 20px; aspect-ratio: 1;
+    border-radius: var(--radius-lg); overflow: hidden;
+    border: 1px solid var(--border); background: var(--surface);
+  }
+  .img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .img-spinner {
+    position: absolute; inset: 0; display: flex;
+    align-items: center; justify-content: center;
+  }
+  .spinner {
+    width: 32px; height: 32px; border: 3px solid var(--border);
+    border-top-color: var(--teal); border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .fade-up { animation: fadeUp 0.35s ease; }
+
+  .badge-rare {
+    position: absolute; top: 10px; left: 10px;
+    background: rgba(217,119,6,0.15); border: 1px solid var(--amber);
+    border-radius: 6px; padding: 3px 8px;
+    font-size: 11px; color: var(--amber); font-weight: 600;
+  }
+  .gradcam-badge {
+    position: absolute; top: 10px; right: 10px;
+    background: rgba(0,0,0,0.65); border-radius: 5px;
+    padding: 3px 8px; font-size: 10px; color: #22d3ee;
+    font-family: monospace; display: none;
+  }
+  .revealing-overlay {
+    position: absolute; inset: 0; background: rgba(0,0,0,0.6);
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .opt-btn {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 14px 16px; cursor: pointer;
+    text-align: left; transition: all 0.15s; font-family: inherit;
+    width: 100%;
+  }
+  .opt-btn:hover:not(:disabled) { border-color: var(--teal); }
+  .opt-btn:disabled { cursor: default; }
+  .opt-btn.correct { border-color: var(--green); background: rgba(22,163,74,0.08); }
+  .opt-btn.wrong   { border-color: var(--red);   background: rgba(220,38,38,0.08); }
+  .opt-label { font-size: 12px; font-weight: 700; font-family: monospace; }
+  .opt-sub   { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+  .bar-track { background: var(--border); border-radius: 4px; height: 5px; margin-top: 4px; }
+  .bar-fill  { height: 100%; border-radius: 4px; transition: width 0.4s ease; }
+
+  .reveal-banner {
+    border-radius: var(--radius-lg); padding: 18px 20px; margin-bottom: 12px;
+    border-width: 1px; border-style: solid;
+  }
+  .reveal-correct { background: rgba(5,46,22,0.3); border-color: rgba(22,163,74,0.3); }
+  .reveal-wrong   { background: rgba(45,10,10,0.3); border-color: rgba(220,38,38,0.3); }
+
+  .section-label {
+    font-size: 11px; font-family: monospace; letter-spacing: 0.5px;
+    font-weight: 700; margin-bottom: 10px;
+  }
+
+  .explain-block {
+    border-left: 3px solid; border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 10px 14px; margin-top: 10px;
+  }
+
+  /* Benchmark table */
+  .bench-row {
+    display: grid; grid-template-columns: 2fr 1fr 1fr 1fr;
+    padding: 10px 16px; border-bottom: 1px solid #0f172a;
+    font-size: 12px; font-family: monospace;
+  }
+  .bench-row:last-child { border-bottom: none; }
+  .bench-row.best { background: #0a1628; }
+
+  @media (max-width: 500px) {
+    .grid2 { grid-template-columns: 1fr; }
+    .grid3 { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── HOME ─────────────────────────────────────────────── -->
+<div class="screen active" id="screen-home">
+<div class="container">
+  <div class="status-bar">
+    <span class="dot" id="status-dot" style="background:#ef4444;"></span>
+    <span class="mono" id="status-label" style="font-size:12px;color:var(--muted);">Connecting to ARCMED API…</span>
+  </div>
+
+  <h1 style="font-size:42px;font-weight:900;letter-spacing:-2px;line-height:1.1;margin-bottom:12px;">
+    MedVision<br><span style="color:var(--teal);">Reflex</span>
+  </h1>
+  <p style="color:var(--muted);font-size:15px;line-height:1.7;margin-bottom:32px;max-width:480px;">
+    Train your eyes to diagnose dermoscopy images in under 10 seconds —
+    powered by real AI, not flashcard labels.
+  </p>
+
+  <div class="grid2" style="margin-bottom:28px;">
+    <div class="card">
+      <div style="font-size:11px;color:var(--dim);font-weight:700;font-family:monospace;margin-bottom:12px;">OTHERS</div>
+      <div style="display:flex;flex-direction:column;gap:7px;font-size:13px;color:var(--dim);">
+        <span>✗ LLM reads the label</span>
+        <span>✗ 400 stock images</span>
+        <span>✗ No published benchmark</span>
+        <span>✗ No visual AI reasoning</span>
+      </div>
+    </div>
+    <div class="card" style="border-color:#0e749044;">
+      <div style="font-size:11px;color:var(--teal);font-weight:700;font-family:monospace;margin-bottom:12px;">MEDVISION REFLEX</div>
+      <div style="display:flex;flex-direction:column;gap:7px;font-size:13px;color:var(--text);">
+        <span>✓ ARCMED sees the image</span>
+        <span>✓ 10,000 MILK10k images</span>
+        <span>✓ AUROC 0.9073 benchmark</span>
+        <span>✓ GradCAM heatmap overlay</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid3" style="margin-bottom:28px;">
+    <div class="stat-card"><div class="stat-val" style="color:var(--teal);">10k+</div><div class="stat-lbl">Images</div><div class="stat-sub">MILK10k dataset</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--amber);">11</div><div class="stat-lbl">Classes</div><div class="stat-sub">incl. 5 rare</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--green);">0.91</div><div class="stat-lbl">Best AUROC</div><div class="stat-sub">Swin-T benchmark</div></div>
+  </div>
+
+  <div class="grid2" style="margin-bottom:10px;">
+    <button class="btn btn-primary" id="btn-all" onclick="startDrill('all')" disabled>All classes</button>
+    <button class="btn btn-amber" id="btn-rare" onclick="startDrill('rare')" disabled>Rare classes only</button>
+  </div>
+  <button class="btn btn-ghost" id="btn-bench" onclick="showScreen('benchmark')" disabled
+    style="width:100%;padding:13px;">📊 View published benchmark</button>
+</div>
+</div>
+
+<!-- ── DRILL ─────────────────────────────────────────────── -->
+<div class="screen" id="screen-drill">
+  <div class="drill-topbar">
+    <button class="btn btn-ghost" onclick="showScreen('home')" style="font-size:13px;">← Home</button>
+    <div style="display:flex;align-items:center;gap:18px;">
+      <span class="mono" id="q-counter" style="font-size:13px;color:var(--muted);">Q 1/10</span>
+      <span style="font-size:13px;color:var(--green);" id="score-display">✓ 0</span>
+      <span style="font-size:13px;color:var(--amber);display:none;" id="streak-display"></span>
+    </div>
+    <svg width="52" height="52" id="timer-svg" style="transform:rotate(-90deg);">
+      <circle cx="26" cy="26" r="22" fill="none" stroke="#1e293b" stroke-width="4"/>
+      <circle cx="26" cy="26" r="22" fill="none" stroke="#0e7490" stroke-width="4"
+        stroke-dasharray="138.2" stroke-dashoffset="0" id="timer-circle"
+        style="transition:stroke-dashoffset 0.9s linear,stroke 0.3s;"/>
+      <text x="26" y="26" text-anchor="middle" dominant-baseline="central" id="timer-text"
+        style="transform:rotate(90deg);transform-origin:26px 26px;
+               font-family:monospace;font-size:14px;font-weight:700;fill:#0e7490;">10</text>
+    </svg>
+  </div>
+
+  <div class="progress-track" style="margin:0;">
+    <div class="progress-fill" id="progress-bar" style="width:10%;"></div>
+  </div>
+
+  <div style="padding:0 20px;">
+    <div class="img-wrap" id="img-wrap">
+      <div class="img-spinner" id="img-spinner"><div class="spinner"></div></div>
+      <img id="drill-img" style="display:none;" alt="Dermoscopy image for diagnosis"/>
+      <img id="gradcam-img" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;opacity:0;transition:opacity 0.5s;" alt="GradCAM attention heatmap"/>
+      <div class="badge-rare" id="rare-badge" style="display:none;">RARE CLASS</div>
+      <div class="gradcam-badge" id="gradcam-badge">GradCAM — ARCMED attention</div>
+    </div>
+
+    <div class="grid2" id="options-grid" style="margin-bottom:16px;"></div>
+
+    <div id="reveal-panel" style="display:none;">
+      <div id="result-banner" class="reveal-banner fade-up"></div>
+      <div id="scores-panel" class="card fade-up" style="display:none;margin-bottom:10px;"></div>
+      <div id="explanation-panel" class="card fade-up" style="display:none;margin-bottom:10px;"></div>
+      <button class="btn btn-primary" id="next-btn" onclick="nextQuestion()" style="margin-bottom:24px;">
+        Next question →
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── RESULTS ────────────────────────────────────────────── -->
+<div class="screen" id="screen-results">
+<div class="container" style="text-align:center;">
+  <div id="res-emoji" style="font-size:56px;margin-bottom:10px;">🎯</div>
+  <h2 id="res-title" style="font-size:30px;font-weight:800;margin-bottom:6px;"></h2>
+  <div id="res-pct" class="mono" style="font-size:52px;font-weight:900;color:var(--teal);margin:8px 0;"></div>
+  <div id="res-sub" style="color:var(--muted);margin-bottom:28px;"></div>
+
+  <div class="grid3" style="margin-bottom:20px;">
+    <div class="stat-card"><div class="stat-val" id="res-correct" style="color:var(--green);">0</div><div class="stat-lbl">Correct</div></div>
+    <div class="stat-card"><div class="stat-val" id="res-streak" style="color:var(--amber);">0</div><div class="stat-lbl">Best streak</div></div>
+    <div class="stat-card"><div class="stat-val" id="res-score" style="color:var(--teal);">0%</div><div class="stat-lbl">Score</div></div>
+  </div>
+
+  <div id="weak-panel" class="card" style="text-align:left;margin-bottom:20px;display:none;">
+    <div class="section-label" style="color:var(--red);">YOUR WEAK SPOTS — FOCUS NEXT</div>
+    <div id="weak-list"></div>
+  </div>
+
+  <div class="grid2" style="margin-bottom:10px;">
+    <button class="btn btn-primary" id="restart-btn">Train again</button>
+    <button class="btn btn-ghost" onclick="showScreen('home')" style="width:100%;">Home</button>
+  </div>
+  <button class="btn btn-ghost" onclick="showScreen('benchmark')" style="width:100%;">📊 View research benchmark</button>
+</div>
+</div>
+
+<!-- ── BENCHMARK ──────────────────────────────────────────── -->
+<div class="screen" id="screen-benchmark">
+<div class="container">
+  <button class="btn btn-ghost" onclick="showScreen('home')" style="margin-bottom:24px;font-size:13px;">← Home</button>
+
+  <h2 style="font-size:28px;font-weight:800;margin-bottom:4px;">Published benchmark</h2>
+  <p style="color:var(--muted);font-size:14px;margin-bottom:24px;">
+    RareDerm Phase 1 — 12 models on MILK10k (5,240 samples, 11 classes)
+  </p>
+
+  <div class="card" style="border-left:4px solid var(--amber);border-radius:0 var(--radius-lg) var(--radius-lg) 0;margin-bottom:20px;">
+    <div class="section-label" style="color:var(--amber);">KEY FINDING</div>
+    <p style="font-size:13px;line-height:1.7;color:#cbd5e1;">
+      Micro AUROC (0.94–0.96) is misleadingly high across all 12 models.
+      Rare AUROC (0.84–0.91) reveals dangerous rare class failures invisible to standard metrics.
+    </p>
+  </div>
+
+  <div class="card" style="padding:0;overflow:hidden;margin-bottom:20px;">
+    <div class="bench-row" style="border-bottom:1px solid var(--border);">
+      <span style="color:var(--dim);">MODEL</span>
+      <span style="color:var(--green);">MACRO</span>
+      <span style="color:var(--dim);">MICRO</span>
+      <span style="color:var(--amber);">RARE</span>
+    </div>
+    <div id="bench-table"></div>
+  </div>
+
+  <div class="grid3" style="margin-bottom:20px;">
+    <div class="stat-card"><div class="stat-val" style="color:var(--dim);font-size:20px;">0.631</div><div class="stat-lbl">SAM2 Dice</div><div class="stat-sub">Baseline</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--green);font-size:20px;">0.804</div><div class="stat-lbl">LoRA DINO Dice</div><div class="stat-sub">Δ +17.8%</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--teal);font-size:20px;">0.885</div><div class="stat-lbl">ARCMED MA AUROC</div><div class="stat-sub">Δ +3.3%</div></div>
+  </div>
+
+  <div class="card">
+    <div class="section-label" style="color:var(--teal);">PAPER CONTRIBUTIONS (MIA / JBHI target)</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;gap:10px;font-size:13px;"><span style="color:var(--teal);flex-shrink:0;font-weight:700;">C1</span><span style="color:#94a3b8;">First benchmark revealing Rare vs Micro AUROC gap on MILK10k (12 models)</span></div>
+      <div style="display:flex;gap:10px;font-size:13px;"><span style="color:var(--teal);flex-shrink:0;font-weight:700;">C2</span><span style="color:#94a3b8;">LoRA-tuned Grounding DINO improves segmentation Dice +17.8%</span></div>
+      <div style="display:flex;gap:10px;font-size:13px;"><span style="color:var(--teal);flex-shrink:0;font-weight:700;">C3</span><span style="color:#94a3b8;">Mask-aware ARCMED V3 improves classification AUROC +3.3%</span></div>
+      <div style="display:flex;gap:10px;font-size:13px;"><span style="color:var(--teal);flex-shrink:0;font-weight:700;">C4</span><span style="color:#94a3b8;">Faithfulness analysis reveals background bias in high-AUROC models (PG=14.5%)</span></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+const BACKEND  = "https://solomon-specifically-strikes-portland.trycloudflare.com";
+const TIMER_S  = 10;
+const TOTAL_Q  = 10;
+const RARE     = ["MAL_OTH","VASC","INF","DF","BEN_OTH"];
+const COLORS   = {
+  AKIEC:"#d97706",BCC:"#ef4444",BEN_OTH:"#10b981",BKL:"#6366f1",
+  DF:"#8b5cf6",INF:"#ec4899",MAL_OTH:"#dc2626",MEL:"#991b1b",
+  NV:"#059669",SCCKA:"#d97706",VASC:"#0ea5e9"
+};
+const MODELS = [
+  ["Swin-T",0.9073,0.9570,0.9138],["EfficientNet-B3",0.8999,0.9606,0.8938],
+  ["RegNetY-8GF",0.8948,0.9525,0.8970],["ConvNeXt-T",0.8940,0.9543,0.9006],
+  ["EffNet-B3+Meta",0.8892,0.9509,0.9065],["MaxViT-T",0.8831,0.9515,0.8700],
+  ["DenseNet-121",0.8826,0.9566,0.8671],["ResNet-50",0.8769,0.9542,0.8656],
+  ["EfficientNetV2-S",0.8760,0.9500,0.8704],["ARCMED-V3+HNM",0.8632,0.9481,0.8528],
+  ["ViT-B/16",0.8623,0.9400,0.8852],["ARCMED-V3",0.8515,0.9471,0.8270],
+];
+
+let S = {
+  mode:"all", qNum:1, correct:0, total:0,
+  streak:0, best:0, weak:{},
+  img:null, timer:null, timeLeft:TIMER_S, phase:"idle"
+};
+
+// ── Navigation ────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  document.getElementById("screen-"+id).classList.add("active");
+  if(id==="benchmark") renderBenchmark();
+}
+
+// ── Health check ──────────────────────────────────────────
+async function checkHealth() {
+  try {
+    const r = await fetch(BACKEND+"/health",{signal:AbortSignal.timeout(6000)});
+    if(r.ok) {
+      document.getElementById("status-dot").style.cssText="background:#16a34a;box-shadow:0 0 6px #16a34a;";
+      document.getElementById("status-label").textContent="ARCMED API online";
+      ["btn-all","btn-rare","btn-bench"].forEach(id=>document.getElementById(id).disabled=false);
+    } else setOffline();
+  } catch { setOffline(); }
+}
+function setOffline() {
+  document.getElementById("status-dot").style.background="#ef4444";
+  document.getElementById("status-label").textContent="API offline — check Kaggle notebook";
+}
+
+// ── Drill ─────────────────────────────────────────────────
+function startDrill(mode) {
+  S = { mode, qNum:1, correct:0, total:0, streak:0, best:0, weak:{}, img:null, timer:null, timeLeft:TIMER_S, phase:"idle" };
+  showScreen("drill");
+  loadQuestion();
+}
+
+async function loadQuestion() {
+  S.phase="loading";
+  clearInterval(S.timer);
+  document.getElementById("img-spinner").style.display="flex";
+  document.getElementById("drill-img").style.display="none";
+  document.getElementById("gradcam-img").style.display="none";
+  document.getElementById("gradcam-img").style.opacity="0";
+  document.getElementById("gradcam-badge").style.display="none";
+  document.getElementById("reveal-panel").style.display="none";
+  document.getElementById("rare-badge").style.display="none";
+  document.getElementById("options-grid").innerHTML="";
+  document.getElementById("timer-svg").style.opacity="1";
+  document.getElementById("q-counter").textContent=`Q ${S.qNum}/${TOTAL_Q}`;
+  document.getElementById("progress-bar").style.width=`${(S.qNum/TOTAL_Q)*100}%`;
+
+  try {
+    const r = await fetch(`${BACKEND}/random_image?mode=${S.mode}`);
+    const d = await r.json();
+    S.img = d;
+    const img = document.getElementById("drill-img");
+    img.onload = () => {
+      document.getElementById("img-spinner").style.display="none";
+      img.style.display="block";
+      if(d.is_rare) document.getElementById("rare-badge").style.display="block";
+      renderOptions(d.options, d.true_label);
+      startTimer();
+      S.phase="question";
+    };
+    img.src = `data:image/jpeg;base64,${d.image_b64}`;
+  } catch(e) {
+    document.getElementById("img-spinner").innerHTML=
+      "<span style='font-size:12px;color:var(--muted);padding:10px;text-align:center;'>Connection error.<br>Is Kaggle still running?</span>";
+  }
+}
+
+function renderOptions(opts, trueLabel) {
+  const grid = document.getElementById("options-grid");
+  opts.forEach(opt => {
+    const btn = document.createElement("button");
+    btn.className="opt-btn";
+    btn.innerHTML=`<div class="opt-label" style="color:${COLORS[opt]||'#94a3b8'};">${opt}</div>
+      <div class="opt-sub">${RARE.includes(opt)?"⚠ Rare":"Common"}</div>`;
+    btn.onclick=()=>handleAnswer(opt);
+    grid.appendChild(btn);
+  });
+}
+
+function startTimer() {
+  S.timeLeft=TIMER_S;
+  updateTimer();
+  S.timer=setInterval(()=>{
+    S.timeLeft--;
+    updateTimer();
+    if(S.timeLeft<=0){ clearInterval(S.timer); handleAnswer(null); }
+  },1000);
+}
+
+function updateTimer() {
+  const t=S.timeLeft, circ=138.2;
+  const offset=circ*(1-t/TIMER_S);
+  const color=t>TIMER_S*0.5?"#0e7490":t>TIMER_S*0.25?"#d97706":"#dc2626";
+  document.getElementById("timer-circle").style.strokeDashoffset=offset;
+  document.getElementById("timer-circle").style.stroke=color;
+  document.getElementById("timer-text").style.fill=color;
+  document.getElementById("timer-text").textContent=t;
+}
+
+async function handleAnswer(choice) {
+  if(S.phase!=="question") return;
+  S.phase="revealing";
+  clearInterval(S.timer);
+  document.getElementById("timer-svg").style.opacity="0.3";
+
+  const trueLabel=S.img.true_label;
+  const correct=choice===trueLabel;
+
+  S.total++; 
+  if(correct){S.correct++;S.streak++;S.best=Math.max(S.best,S.streak);}
+  else{S.streak=0;S.weak[trueLabel]=(S.weak[trueLabel]||0)+1;}
+
+  document.getElementById("score-display").textContent=`✓ ${S.correct}`;
+  const sd=document.getElementById("streak-display");
+  if(S.streak>=3){sd.style.display="inline";sd.textContent=`🔥 ${S.streak}`;}
+  else sd.style.display="none";
+
+  document.querySelectorAll(".opt-btn").forEach(btn=>{
+    btn.disabled=true;
+    const lbl=btn.querySelector(".opt-label").textContent.trim();
+    if(lbl===trueLabel) btn.classList.add("correct");
+    else if(lbl===choice&&!correct) btn.classList.add("wrong");
+  });
+
+  const banner=document.getElementById("result-banner");
+  banner.className=`reveal-banner fade-up ${correct?"reveal-correct":"reveal-wrong"}`;
+  banner.innerHTML=`
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span style="font-size:24px;">${correct?"✅":"❌"}</span>
+      <div>
+        <div style="font-size:16px;font-weight:700;color:${correct?"var(--green)":"var(--red)"};">
+          ${correct?"Correct!":"Incorrect"}
+        </div>
+        <div style="font-size:12px;color:var(--muted);margin-top:3px;">
+          Answer: <span class="mono" style="color:${COLORS[trueLabel]||'#888'};font-weight:700;">${trueLabel}</span>
+          ${choice===null?" (time up)":""}
+        </div>
+      </div>
+    </div>`;
+
+  document.getElementById("reveal-panel").style.display="block";
+  document.getElementById("next-btn").textContent=
+    S.qNum>=TOTAL_Q?"See results →":`Next question (${S.qNum}/${TOTAL_Q}) →`;
+
+  // Call backend
+  try {
+    const blob=await fetch(`data:image/jpeg;base64,${S.img.image_b64}`).then(r=>r.blob());
+    const form=new FormData();
+    form.append("file",blob,"image.jpg");
+    form.append("true_label",trueLabel);
+    const resp=await fetch(`${BACKEND}/classify_and_explain`,{method:"POST",body:form});
+    const data=await resp.json();
+
+    // GradCAM
+    if(data.gradcam_b64){
+      const gi=document.getElementById("gradcam-img");
+      gi.onload=()=>{gi.style.display="block";setTimeout(()=>{gi.style.opacity="1";},50);};
+      gi.src=`data:image/png;base64,${data.gradcam_b64}`;
+      document.getElementById("gradcam-badge").style.display="block";
+    }
+
+    // Scores
+    if(data.all_scores){
+      const sp=document.getElementById("scores-panel");
+      sp.style.display="block";
+      const sorted=Object.entries(data.all_scores).sort((a,b)=>b[1]-a[1]).slice(0,5);
+      sp.innerHTML=`
+        <div class="section-label" style="color:var(--muted);">ARCMED confidence scores</div>
+        ${sorted.map(([cls,val])=>`
+          <div style="margin-bottom:8px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+              <span class="mono" style="font-size:11px;color:${COLORS[cls]||'#888'};">
+                ${cls}${RARE.includes(cls)?` <span style="color:var(--amber);font-size:10px;">RARE</span>`:""}
+              </span>
+              <span class="mono" style="font-size:11px;color:var(--muted);">${(val*100).toFixed(1)}%</span>
+            </div>
+            <div class="bar-track">
+              <div class="bar-fill" style="width:${Math.min(val*100,100).toFixed(1)}%;background:${COLORS[cls]||'var(--teal)'};"></div>
+            </div>
+          </div>`).join("")}`;
+    }
+
+    // Explanation
+    if(data.explanation){
+      const exp=data.explanation;
+      const ep=document.getElementById("explanation-panel");
+      ep.style.display="block";
+      ep.innerHTML=`
+        <div class="section-label" style="color:var(--teal);">CLINICAL EXPLANATION</div>
+        <p style="font-size:13px;color:#cbd5e1;line-height:1.7;margin-bottom:12px;">${exp.explanation||""}</p>
+        ${exp.mnemonic?`
+          <div class="explain-block" style="border-color:var(--teal);margin-bottom:10px;">
+            <div style="font-size:10px;color:var(--teal);font-weight:700;margin-bottom:4px;">MNEMONIC</div>
+            <div style="font-size:13px;color:var(--text);">${exp.mnemonic}</div>
+          </div>`:""}
+        ${exp.high_yield?.length?`
+          <div style="margin-bottom:10px;">
+            <div style="font-size:10px;color:var(--amber);font-weight:700;margin-bottom:6px;">HIGH-YIELD EXAM FACTS</div>
+            ${exp.high_yield.map(f=>`
+              <div style="display:flex;gap:8px;margin-bottom:5px;">
+                <span style="color:var(--amber);flex-shrink:0;">→</span>
+                <span style="font-size:13px;color:#94a3b8;">${f}</span>
+              </div>`).join("")}
+          </div>`:""}
+        ${exp.pitfall?`
+          <div class="explain-block" style="border-color:var(--red);">
+            <div style="font-size:10px;color:var(--red);font-weight:700;margin-bottom:4px;">COMMON PITFALL</div>
+            <div style="font-size:13px;color:#fca5a5;">${exp.pitfall}</div>
+          </div>`:""}`;
+    }
+  } catch(e){ console.error("Backend error:",e); }
+
+  S.phase="reveal";
+}
+
+function nextQuestion() {
+  if(S.qNum>=TOTAL_Q){ showResults(); return; }
+  S.qNum++;
+  loadQuestion();
+}
+
+function showResults() {
+  const pct=S.total>0?Math.round(S.correct/S.total*100):0;
+  document.getElementById("res-emoji").textContent=pct>=80?"🎯":pct>=60?"📈":"🔁";
+  document.getElementById("res-title").textContent=pct>=80?"Excellent reflexes":pct>=60?"Good progress":"Keep training";
+  document.getElementById("res-pct").textContent=`${pct}%`;
+  document.getElementById("res-sub").textContent=`${S.correct} / ${S.total} correct`;
+  document.getElementById("res-correct").textContent=S.correct;
+  document.getElementById("res-streak").textContent=S.best;
+  document.getElementById("res-score").textContent=`${pct}%`;
+  document.getElementById("restart-btn").onclick=()=>startDrill(S.mode);
+
+  const weak=Object.entries(S.weak).sort((a,b)=>b[1]-a[1]).slice(0,3);
+  if(weak.length>0){
+    document.getElementById("weak-panel").style.display="block";
+    document.getElementById("weak-list").innerHTML=weak.map(([cls,n])=>`
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <div>
+          <span class="mono" style="font-size:13px;font-weight:700;color:${COLORS[cls]||'#888'};">${cls}</span>
+          ${RARE.includes(cls)?`<span style="margin-left:8px;font-size:10px;color:var(--amber);background:rgba(217,119,6,0.15);padding:2px 6px;border-radius:4px;">RARE</span>`:""}
+        </div>
+        <span style="font-size:13px;color:var(--red);">missed ${n}×</span>
+      </div>`).join("");
+  }
+  showScreen("results");
+}
+
+function renderBenchmark() {
+  document.getElementById("bench-table").innerHTML=MODELS.map(([name,macro,micro,rare],i)=>`
+    <div class="bench-row${i===0?" best":""}">
+      <span style="color:${i===0?"var(--teal)":"var(--muted);"};font-weight:${i===0?700:400};">
+        ${name}${i===0?" ★":""}
+      </span>
+      <span style="color:var(--green);">${macro.toFixed(4)}</span>
+      <span style="color:var(--dim);">${micro.toFixed(4)}</span>
+      <span style="color:var(--amber);">${rare.toFixed(4)}</span>
+    </div>`).join("");
+}
+
+// Init
+checkHealth();
+setInterval(checkHealth,30000);
+renderBenchmark();
+</script>
+</body>
+</html>
