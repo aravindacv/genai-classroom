@@ -64,10 +64,10 @@ const CONFIG = {
 
   // ── Models per provider ───────────────────────────────────
   models: {
-    groq:       "llama-3.3-70b-versatile",
-    gemini:     "gemini-2.0-flash",
+    groq:       "openai/gpt-oss-120b",
+    gemini:     "gemini-3.5-flash-lite",
     openrouter: "meta-llama/llama-3.3-70b-instruct:free",
-    anthropic:  "claude-opus-4-5"
+    anthropic:  "claude-sonnet-5-5"
   },
 
   // ── Max tokens per provider ───────────────────────────────

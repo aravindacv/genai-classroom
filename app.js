@@ -8,7 +8,7 @@ const API = {
   // ── Endpoints ─────────────────────────────────────────────
   endpoints: {
     groq:       "https://api.groq.com/openai/v1/chat/completions",
-    gemini:     "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
+    gemini:     "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent",
     openrouter: "https://openrouter.ai/api/v1/chat/completions",
     anthropic:  "https://api.anthropic.com/v1/messages"
   },
